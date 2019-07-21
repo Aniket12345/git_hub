@@ -7,6 +7,7 @@
 -k /usr/share/sdcc/lib/stm8
 -l stm8
 -l stm8
-bin/Uart.rel
+bin/stm8_clk.rel
+bin/blink.rel
 
 -e

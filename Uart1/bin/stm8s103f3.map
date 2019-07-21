@@ -7,7 +7,7 @@ Area                                    Addr        Size        Decimal Bytes (A
 
       Value  Global                              Global Defined In Module
       -----  --------------------------------   ------------------------
-     00000000  .__.ABS.                           _strlen
+     00000000  .__.ABS.                           blink
      00000000  l_CABS                          
      00000000  l_DABS                          
      00000000  l_DATA                          
@@ -20,27 +20,18 @@ Area                                    Addr        Size        Decimal Bytes (A
      00000001  l_SSEG                          
      00000001  s_DATA                          
      00000001  s_INITIALIZED                   
-     00000001  s_SSEG                          
      00000003  l_GSFINAL                       
      0000001A  l_GSINIT                        
      00000083  l_HOME                          
-     000000BE  l_CODE                          
+     000000B7  l_CODE                          
      00008000  s_HOME                          
      00008083  s_GSINIT                        
      0000809D  s_GSFINAL                       
      000080A0  s_CODE                          
-     0000815E  s_INITIALIZER                   
+     00008157  s_INITIALIZER                   
+     00008157  s_SSEG                          
 
 ASxxxx Linker V03.00 + NoICE + sdld,  page 2.
-Hexadecimal  [32-Bits]
-
-Area                                    Addr        Size        Decimal Bytes (Attributes)
---------------------------------        ----        ----        ------- ----- ------------
-SSEG                                00000001    00000001 =           1. bytes (REL,CON)
-
-      Value  Global                              Global Defined In Module
-      -----  --------------------------------   ------------------------
-ASxxxx Linker V03.00 + NoICE + sdld,  page 3.
 Hexadecimal  [32-Bits]
 
 Area                                    Addr        Size        Decimal Bytes (Attributes)
@@ -49,7 +40,7 @@ HOME                                00008000    00000083 =         131. bytes (R
 
       Value  Global                              Global Defined In Module
       -----  --------------------------------   ------------------------
-ASxxxx Linker V03.00 + NoICE + sdld,  page 4.
+ASxxxx Linker V03.00 + NoICE + sdld,  page 3.
 Hexadecimal  [32-Bits]
 
 Area                                    Addr        Size        Decimal Bytes (Attributes)
@@ -58,7 +49,7 @@ GSINIT                              00008083    0000001A =          26. bytes (R
 
       Value  Global                              Global Defined In Module
       -----  --------------------------------   ------------------------
-ASxxxx Linker V03.00 + NoICE + sdld,  page 5.
+ASxxxx Linker V03.00 + NoICE + sdld,  page 4.
 Hexadecimal  [32-Bits]
 
 Area                                    Addr        Size        Decimal Bytes (Attributes)
@@ -67,30 +58,33 @@ GSFINAL                             0000809D    00000003 =           3. bytes (R
 
       Value  Global                              Global Defined In Module
       -----  --------------------------------   ------------------------
+ASxxxx Linker V03.00 + NoICE + sdld,  page 5.
+Hexadecimal  [32-Bits]
+
+Area                                    Addr        Size        Decimal Bytes (Attributes)
+--------------------------------        ----        ----        ------- ----- ------------
+CODE                                000080A0    000000B7 =         183. bytes (REL,CON)
+
+      Value  Global                              Global Defined In Module
+      -----  --------------------------------   ------------------------
+     000080A0  _Initialise_System_Clock           stm8_clk
+     000080E8  _delay                             blink
+     0000811B  _main                              blink
 ASxxxx Linker V03.00 + NoICE + sdld,  page 6.
 Hexadecimal  [32-Bits]
 
 Area                                    Addr        Size        Decimal Bytes (Attributes)
 --------------------------------        ----        ----        ------- ----- ------------
-CODE                                000080A0    000000BE =         190. bytes (REL,CON)
+SSEG                                00008157    00000001 =           1. bytes (REL,CON)
 
       Value  Global                              Global Defined In Module
       -----  --------------------------------   ------------------------
-     000080A0  _delay                             Uart
-     000080D3  _uart_write                        Uart
-     0000810F  _main                              Uart
-     00008150  _strlen                            _strlen
-
 ASxxxx Linker V03.00 + NoICE + sdld,  page 7.
 
 Files Linked                              [ module(s) ]
 
-bin/Uart.rel                              [ Uart ]
-
-
-Libraries Linked                          [ object file ]
-
-/usr/bin/../share/sdcc/lib/stm8/stm8.lib  [ _strlen.rel ]
+bin/stm8_clk.rel                          [ stm8_clk ]
+bin/blink.rel                             [ blink ]
 
 ASxxxx Linker V03.00 + NoICE + sdld,  page 8.
 

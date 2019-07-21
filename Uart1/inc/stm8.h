@@ -23,6 +23,20 @@
 
 /* Clock */
 #define CLK_CKDIVR	*(volatile unsigned char *)0x50C6
+#define CLK_ICKR	*(volatile unsigned char *)0x50C0
+#define CLK_ECKR	*(volatile unsigned char *)0x50C1
+#define CLK_PCKENR1	*(volatile unsigned char *)0x50C7
+#define CLK_PCKENR2	*(volatile unsigned char *)0x50CA
+#define CLK_CCOR	*(volatile unsigned char *)0x50C9
+#define CLK_HSITRIMR	*(volatile unsigned char *)0x50CC
+#define CLK_SWIMCCR	*(volatile unsigned char *)0x50CD
+#define CLK_SWR		*(volatile unsigned char *)0x50C4
+#define CLK_SWCR	*(volatile unsigned char *)0x50C5
+
+#define CLK_ICKR_HSIEN		(1 << 0)
+#define CLK_ICKR_HSIRDY		(1 << 1)
+#define CLK_SWCR_SWEN		(1 << 1)
+#define CLK_SWCR_SWBSY		(1 << 0) 
 
 /* GPIO */
 #define PA_ODR *(volatile unsigned char *)0x5000

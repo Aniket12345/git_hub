@@ -1,18 +1,17 @@
 ;--------------------------------------------------------
 ; File Created by SDCC : free open source ANSI-C Compiler
 ; Version 3.5.0 #9253 (Mar 24 2016) (Linux)
-; This file was generated Sun Jul 21 01:39:08 2019
+; This file was generated Mon Jul 22 00:37:31 2019
 ;--------------------------------------------------------
-	.module Uart
+	.module blink
 	.optsdcc -mstm8
 	
 ;--------------------------------------------------------
 ; Public variables in this module
 ;--------------------------------------------------------
 	.globl _main
-	.globl _uart_write
 	.globl _delay
-	.globl _strlen
+	.globl _Initialise_System_Clock
 ;--------------------------------------------------------
 ; ram data
 ;--------------------------------------------------------
@@ -109,13 +108,13 @@ __sdcc_program_startup:
 ; code
 ;--------------------------------------------------------
 	.area CODE
-;	src/Uart.c: 6: void delay(unsigned long count) {
+;	src/blink.c: 17: void delay(unsigned long count) {
 ;	-----------------------------------------
 ;	 function delay
 ;	-----------------------------------------
 _delay:
 	sub	sp, #8
-;	src/Uart.c: 7: while (count--)
+;	src/blink.c: 18: while (count--)
 	ldw	y, (0x0b, sp)
 	ldw	(0x01, sp), y
 	ldw	x, (0x0d, sp)
@@ -142,102 +141,57 @@ _delay:
 	ldw	y, (0x05, sp)
 	jreq	00104$
 00115$:
-;	src/Uart.c: 8: nop();
+;	src/blink.c: 19: nop();
 	nop
 	jra	00101$
 00104$:
 	addw	sp, #8
 	ret
-;	src/Uart.c: 11: int uart_write(const char *str) {
-;	-----------------------------------------
-;	 function uart_write
-;	-----------------------------------------
-_uart_write:
-	sub	sp, #3
-;	src/Uart.c: 13: for(i = 0; i < strlen(str); i++) {
-	clr	(0x01, sp)
-00106$:
-	ldw	x, (0x06, sp)
-	pushw	x
-	call	_strlen
-	addw	sp, #2
-	ldw	(0x02, sp), x
-	ld	a, (0x01, sp)
-	ld	xl, a
-	rlc	a
-	clr	a
-	sbc	a, #0x00
-	ld	xh, a
-	cpw	x, (0x02, sp)
-	jrnc	00104$
-;	src/Uart.c: 14: while(!(UART1_SR & UART_SR_TXE)); // !Transmit data register empty
-00101$:
-	ldw	x, #0x5230
-	ld	a, (x)
-	tnz	a
-	jrpl	00101$
-;	src/Uart.c: 15: UART1_DR = str[i];
-	clrw	x
-	ld	a, (0x01, sp)
-	ld	xl, a
-	addw	x, (0x06, sp)
-	ld	a, (x)
-	ldw	x, #0x5231
-	ld	(x), a
-;	src/Uart.c: 13: for(i = 0; i < strlen(str); i++) {
-	inc	(0x01, sp)
-	jra	00106$
-00104$:
-;	src/Uart.c: 17: return(i); // Bytes sent
-	ld	a, (0x01, sp)
-	ld	xl, a
-	rlc	a
-	clr	a
-	sbc	a, #0x00
-	ld	xh, a
-	addw	sp, #3
-	ret
-;	src/Uart.c: 20: int main(void)
+;	src/blink.c: 22: int main(void)
 ;	-----------------------------------------
 ;	 function main
 ;	-----------------------------------------
 _main:
-;	src/Uart.c: 23: CLK_CKDIVR = 0;
-	mov	0x50c6+0, #0x00
-;	src/Uart.c: 26: UART1_CR2 |= UART_CR2_TEN; // Transmitter enable
-	ldw	x, #0x5235
+;	src/blink.c: 25: Initialise_System_Clock();
+	call	_Initialise_System_Clock
+;	src/blink.c: 29: PORT(LED_PORT, DDR)  |= LED_PIN; // i.e. PB_DDR |= (1 << 5);
+	ldw	x, #0x5007
 	ld	a, (x)
-	or	a, #0x08
+	or	a, #0x20
 	ld	(x), a
-;	src/Uart.c: 28: UART1_CR3 &= ~(UART_CR3_STOP1 | UART_CR3_STOP2); // 1 stop bit
-	ldw	x, #0x5236
+;	src/blink.c: 31: PORT(LED_PORT, CR1)  |= LED_PIN; // i.e. PB_CR1 |= (1 << 5);
+	ldw	x, #0x5008
 	ld	a, (x)
-	and	a, #0xcf
+	or	a, #0x20
 	ld	(x), a
-;	src/Uart.c: 30: UART1_BRR2 = 0x03; UART1_BRR1 = 0x68; // 0x0683 coded funky way (see ref manual)
-	mov	0x5233+0, #0x03
-	mov	0x5232+0, #0x68
-;	src/Uart.c: 32: while(1) {
+;	src/blink.c: 33: while(1) {
 00102$:
-;	src/Uart.c: 33: uart_write("Hello World!\r\n");
-	ldw	x, #___str_0+0
-	pushw	x
-	call	_uart_write
-	popw	x
-;	src/Uart.c: 34: delay(400000L);
-	push	#0x80
-	push	#0x1a
-	push	#0x06
+;	src/blink.c: 35: PORT(LED_PORT, ODR) |= LED_PIN; // PB_ODR |= (1 << 5);
+	ldw	x, #0x5005
+	ld	a, (x)
+	or	a, #0x20
+	ld	(x), a
+;	src/blink.c: 36: delay(100000L);
+	push	#0xa0
+	push	#0x86
+	push	#0x01
+	push	#0x00
+	call	_delay
+	addw	sp, #4
+;	src/blink.c: 38: PORT(LED_PORT, ODR) &= ~LED_PIN; // PB_ODR &= ~(1 << 5);
+	ldw	x, #0x5005
+	ld	a, (x)
+	and	a, #0xdf
+	ld	(x), a
+;	src/blink.c: 39: delay(300000L);
+	push	#0xe0
+	push	#0x93
+	push	#0x04
 	push	#0x00
 	call	_delay
 	addw	sp, #4
 	jra	00102$
 	ret
 	.area CODE
-___str_0:
-	.ascii "Hello World!"
-	.db 0x0D
-	.db 0x0A
-	.db 0x00
 	.area INITIALIZER
 	.area CABS (ABS)
