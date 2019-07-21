@@ -1,7 +1,7 @@
 ;--------------------------------------------------------
 ; File Created by SDCC : free open source ANSI-C Compiler
 ; Version 3.5.0 #9253 (Mar 24 2016) (Linux)
-; This file was generated Wed Jul 10 00:12:33 2019
+; This file was generated Sun Jul 21 01:22:08 2019
 ;--------------------------------------------------------
 	.module blink
 	.optsdcc -mstm8
