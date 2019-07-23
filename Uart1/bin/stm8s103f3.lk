@@ -8,6 +8,7 @@
 -l stm8
 -l stm8
 bin/stm8_clk.rel
-bin/blink.rel
+bin/stm8_uart.rel
+bin/main.rel
 
 -e

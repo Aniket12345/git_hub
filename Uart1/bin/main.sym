@@ -8,6 +8,9 @@ Symbol Table
     .__.CPU.                                                    =  000000 L
     .__.H$L.                                                    =  000001 L
     _Initialise_System_Clock                                       ****** GX
+    _Initialise_Uart                                               ****** GX
+    _Uart_Printf                                                   ****** GX
+  8 ___str_0                                                       00007A R
   5 __interrupt_vect                                               000000 R
   6 __sdcc_gs_init_startup                                         000000 R
   6 __sdcc_init_data                                               000000 R
@@ -35,7 +38,7 @@ Area Table
    5 HOME                                       size     83   flags    0
    6 GSINIT                                     size     1A   flags    0
    7 GSFINAL                                    size      3   flags    0
-   8 CODE                                       size     6F   flags    0
+   8 CODE                                       size     8E   flags    0
    9 INITIALIZER                                size      0   flags    0
    A CABS                                       size      0   flags    8
 

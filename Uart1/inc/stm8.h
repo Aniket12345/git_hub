@@ -64,17 +64,17 @@
 #define PD_CR2 *(volatile unsigned char *)0x5013
 
 /* UART */
-#define UART1_SR *(volatile unsigned char *)0x5230
-#define UART1_DR *(volatile unsigned char *)0x5231
-#define UART1_BRR1 *(volatile unsigned char *)0x5232
-#define UART1_BRR2 *(volatile unsigned char *)0x5233
-#define UART1_CR1 *(volatile unsigned char *)0x5234
-#define UART1_CR2 *(volatile unsigned char *)0x5235
-#define UART1_CR3 *(volatile unsigned char *)0x5236
-#define UART1_CR4 *(volatile unsigned char *)0x5237
-#define UART1_CR5 *(volatile unsigned char *)0x5238
-#define UART1_GTR *(volatile unsigned char *)0x5239
-#define UART1_PSCR *(volatile unsigned char *)0x523A
+#define UART_SR *(volatile unsigned char *)0x5230
+#define UART_DR *(volatile unsigned char *)0x5231
+#define UART_BRR1 *(volatile unsigned char *)0x5232
+#define UART_BRR2 *(volatile unsigned char *)0x5233
+#define UART_CR1 *(volatile unsigned char *)0x5234
+#define UART_CR2 *(volatile unsigned char *)0x5235
+#define UART_CR3 *(volatile unsigned char *)0x5236
+#define UART_CR4 *(volatile unsigned char *)0x5237
+#define UART_CR5 *(volatile unsigned char *)0x5238
+#define UART_GTR *(volatile unsigned char *)0x5239
+#define UART_PSCR *(volatile unsigned char *)0x523A
 
 #define UART_SR_TXE (1 << 7)
 #define UART_SR_TC (1 << 6)
@@ -333,8 +333,8 @@ Interrupts:
 14 TIM2 Capture/Compare
 15 TIM3 Update /Overflow
 16 TIM3 Capture/Compare
-17 UART1 Tx complete
-18 UART1 Receive Register DATA FULL
+17 UART Tx complete
+18 UART Receive Register DATA FULL
 19 I2C I2C interrupt
 20 UART2/3 Tx complete
 21 UART2/3 Receive Register DATA FULL
@@ -359,8 +359,8 @@ TIM2_UPD_OVF_BRK
 TIM2_CAP_COM
 TIM3_UPD_OVF_BRK
 TIM3_CAP_COM
-UART1_TX
-UART1_RX
+UART_TX
+UART_RX
 I2C 19
 ADC1 22
 TIM4_UPD_OVF 23

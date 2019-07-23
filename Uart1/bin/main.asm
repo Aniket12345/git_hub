@@ -1,9 +1,9 @@
 ;--------------------------------------------------------
 ; File Created by SDCC : free open source ANSI-C Compiler
 ; Version 3.5.0 #9253 (Mar 24 2016) (Linux)
-; This file was generated Mon Jul 22 00:37:31 2019
+; This file was generated Tue Jul 23 23:56:19 2019
 ;--------------------------------------------------------
-	.module blink
+	.module main
 	.optsdcc -mstm8
 	
 ;--------------------------------------------------------
@@ -11,6 +11,8 @@
 ;--------------------------------------------------------
 	.globl _main
 	.globl _delay
+	.globl _Uart_Printf
+	.globl _Initialise_Uart
 	.globl _Initialise_System_Clock
 ;--------------------------------------------------------
 ; ram data
@@ -108,90 +110,102 @@ __sdcc_program_startup:
 ; code
 ;--------------------------------------------------------
 	.area CODE
-;	src/blink.c: 17: void delay(unsigned long count) {
+;	src/main.c: 17: void delay(unsigned long count) {
 ;	-----------------------------------------
 ;	 function delay
 ;	-----------------------------------------
 _delay:
 	sub	sp, #8
-;	src/blink.c: 18: while (count--)
+;	src/main.c: 18: while (count--)
 	ldw	y, (0x0b, sp)
-	ldw	(0x01, sp), y
+	ldw	(0x05, sp), y
 	ldw	x, (0x0d, sp)
 00101$:
 	exg	a, xl
-	ld	(0x08, sp), a
+	ld	(0x04, sp), a
 	exg	a, xl
-	ldw	y, (0x01, sp)
-	ldw	(0x05, sp), y
+	ldw	y, (0x05, sp)
+	ldw	(0x01, sp), y
 	ld	a, xh
 	subw	x, #0x0001
 	push	a
-	ld	a, (0x03, sp)
+	ld	a, (0x07, sp)
 	sbc	a, #0x00
-	ld	(0x03, sp), a
-	ld	a, (0x02, sp)
+	ld	(0x07, sp), a
+	ld	a, (0x06, sp)
 	sbc	a, #0x00
-	ld	(0x02, sp), a
+	ld	(0x06, sp), a
 	pop	a
-	tnz	(0x08, sp)
+	tnz	(0x04, sp)
 	jrne	00115$
 	tnz	a
 	jrne	00115$
-	ldw	y, (0x05, sp)
+	ldw	y, (0x01, sp)
 	jreq	00104$
 00115$:
-;	src/blink.c: 19: nop();
+;	src/main.c: 19: nop();
 	nop
 	jra	00101$
 00104$:
 	addw	sp, #8
 	ret
-;	src/blink.c: 22: int main(void)
+;	src/main.c: 22: int main(void)
 ;	-----------------------------------------
 ;	 function main
 ;	-----------------------------------------
 _main:
-;	src/blink.c: 25: Initialise_System_Clock();
+;	src/main.c: 25: Initialise_System_Clock();
 	call	_Initialise_System_Clock
-;	src/blink.c: 29: PORT(LED_PORT, DDR)  |= LED_PIN; // i.e. PB_DDR |= (1 << 5);
+;	src/main.c: 27: Initialise_Uart();
+	call	_Initialise_Uart
+;	src/main.c: 31: PORT(LED_PORT, DDR)  |= LED_PIN; // i.e. PB_DDR |= (1 << 5);
 	ldw	x, #0x5007
 	ld	a, (x)
 	or	a, #0x20
 	ld	(x), a
-;	src/blink.c: 31: PORT(LED_PORT, CR1)  |= LED_PIN; // i.e. PB_CR1 |= (1 << 5);
+;	src/main.c: 33: PORT(LED_PORT, CR1)  |= LED_PIN; // i.e. PB_CR1 |= (1 << 5);
 	ldw	x, #0x5008
 	ld	a, (x)
 	or	a, #0x20
 	ld	(x), a
-;	src/blink.c: 33: while(1) {
+;	src/main.c: 35: while(1) 
 00102$:
-;	src/blink.c: 35: PORT(LED_PORT, ODR) |= LED_PIN; // PB_ODR |= (1 << 5);
+;	src/main.c: 38: PORT(LED_PORT, ODR) |= LED_PIN; // PB_ODR |= (1 << 5);
 	ldw	x, #0x5005
 	ld	a, (x)
 	or	a, #0x20
 	ld	(x), a
-;	src/blink.c: 36: delay(100000L);
+;	src/main.c: 39: delay(100000L);
 	push	#0xa0
 	push	#0x86
 	push	#0x01
 	push	#0x00
 	call	_delay
 	addw	sp, #4
-;	src/blink.c: 38: PORT(LED_PORT, ODR) &= ~LED_PIN; // PB_ODR &= ~(1 << 5);
+;	src/main.c: 41: PORT(LED_PORT, ODR) &= ~LED_PIN; // PB_ODR &= ~(1 << 5);
 	ldw	x, #0x5005
 	ld	a, (x)
 	and	a, #0xdf
 	ld	(x), a
-;	src/blink.c: 39: delay(300000L);
+;	src/main.c: 42: delay(300000L);
 	push	#0xe0
 	push	#0x93
 	push	#0x04
 	push	#0x00
 	call	_delay
 	addw	sp, #4
+;	src/main.c: 44: Uart_Printf("Hello world......\n\r");
+	ldw	x, #___str_0+0
+	pushw	x
+	call	_Uart_Printf
+	popw	x
 	jra	00102$
 	ret
 	.area CODE
+___str_0:
+	.ascii "Hello world......"
+	.db 0x0A
+	.db 0x0D
+	.db 0x00
 	.area INITIALIZER
 	.area CABS (ABS)

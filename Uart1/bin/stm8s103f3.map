@@ -7,7 +7,7 @@ Area                                    Addr        Size        Decimal Bytes (A
 
       Value  Global                              Global Defined In Module
       -----  --------------------------------   ------------------------
-     00000000  .__.ABS.                           blink
+     00000000  .__.ABS.                           main
      00000000  l_CABS                          
      00000000  l_DABS                          
      00000000  l_DATA                          
@@ -23,13 +23,13 @@ Area                                    Addr        Size        Decimal Bytes (A
      00000003  l_GSFINAL                       
      0000001A  l_GSINIT                        
      00000083  l_HOME                          
-     000000B7  l_CODE                          
+     0000013F  l_CODE                          
      00008000  s_HOME                          
      00008083  s_GSINIT                        
      0000809D  s_GSFINAL                       
      000080A0  s_CODE                          
-     00008157  s_INITIALIZER                   
-     00008157  s_SSEG                          
+     000081DF  s_INITIALIZER                   
+     000081DF  s_SSEG                          
 
 ASxxxx Linker V03.00 + NoICE + sdld,  page 2.
 Hexadecimal  [32-Bits]
@@ -63,19 +63,22 @@ Hexadecimal  [32-Bits]
 
 Area                                    Addr        Size        Decimal Bytes (Attributes)
 --------------------------------        ----        ----        ------- ----- ------------
-CODE                                000080A0    000000B7 =         183. bytes (REL,CON)
+CODE                                000080A0    0000013F =         319. bytes (REL,CON)
 
       Value  Global                              Global Defined In Module
       -----  --------------------------------   ------------------------
      000080A0  _Initialise_System_Clock           stm8_clk
-     000080E8  _delay                             blink
-     0000811B  _main                              blink
+     000080E8  _Initialise_Uart                   stm8_uart
+     00008137  _Uart_Printf                       stm8_uart
+     00008151  _delay                             main
+     00008184  _main                              main
+
 ASxxxx Linker V03.00 + NoICE + sdld,  page 6.
 Hexadecimal  [32-Bits]
 
 Area                                    Addr        Size        Decimal Bytes (Attributes)
 --------------------------------        ----        ----        ------- ----- ------------
-SSEG                                00008157    00000001 =           1. bytes (REL,CON)
+SSEG                                000081DF    00000001 =           1. bytes (REL,CON)
 
       Value  Global                              Global Defined In Module
       -----  --------------------------------   ------------------------
@@ -84,7 +87,8 @@ SSEG                                00008157    00000001 =           1. bytes (R
 Files Linked                              [ module(s) ]
 
 bin/stm8_clk.rel                          [ stm8_clk ]
-bin/blink.rel                             [ blink ]
+bin/stm8_uart.rel                         [ stm8_uart ]
+bin/main.rel                              [ main ]
 
 ASxxxx Linker V03.00 + NoICE + sdld,  page 8.
 
