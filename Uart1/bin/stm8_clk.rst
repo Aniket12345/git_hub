@@ -1,7 +1,7 @@
                                       1 ;--------------------------------------------------------
                                       2 ; File Created by SDCC : free open source ANSI-C Compiler
                                       3 ; Version 3.5.0 #9253 (Mar 24 2016) (Linux)
-                                      4 ; This file was generated Tue Jul 23 23:56:18 2019
+                                      4 ; This file was generated Sun Aug  4 20:58:55 2019
                                       5 ;--------------------------------------------------------
                                       6 	.module stm8_clk
                                       7 	.optsdcc -mstm8

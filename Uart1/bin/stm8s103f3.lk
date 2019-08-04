@@ -10,5 +10,6 @@
 bin/stm8_clk.rel
 bin/stm8_uart.rel
 bin/main.rel
+bin/stm8_tim2.rel
 
 -e

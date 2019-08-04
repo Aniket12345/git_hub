@@ -1,7 +1,7 @@
 ;--------------------------------------------------------
 ; File Created by SDCC : free open source ANSI-C Compiler
 ; Version 3.5.0 #9253 (Mar 24 2016) (Linux)
-; This file was generated Tue Jul 23 23:56:19 2019
+; This file was generated Sun Aug  4 20:58:55 2019
 ;--------------------------------------------------------
 	.module main
 	.optsdcc -mstm8
@@ -11,6 +11,9 @@
 ;--------------------------------------------------------
 	.globl _main
 	.globl _delay
+	.globl _timer_isr
+	.globl _Setup_Timer2
+	.globl _Initialise_Timer2
 	.globl _Uart_Printf
 	.globl _Initialise_Uart
 	.globl _Initialise_System_Clock
@@ -53,7 +56,7 @@ __interrupt_vect:
 	int 0x0000 ;int10
 	int 0x0000 ;int11
 	int 0x0000 ;int12
-	int 0x0000 ;int13
+	int _timer_isr ;int13
 	int 0x0000 ;int14
 	int 0x0000 ;int15
 	int 0x0000 ;int16
@@ -110,13 +113,26 @@ __sdcc_program_startup:
 ; code
 ;--------------------------------------------------------
 	.area CODE
-;	src/main.c: 17: void delay(unsigned long count) {
+;	src/main.c: 24: void timer_isr(void) __interrupt(TIM2_OVR_UIF_IRQ)
+;	-----------------------------------------
+;	 function timer_isr
+;	-----------------------------------------
+_timer_isr:
+;	src/main.c: 26: PORT(LED_PORT, ODR) ^= LED_PIN;
+	ldw	x, #0x5005
+	ld	a, (x)
+	xor	a, #0x20
+	ld	(x), a
+;	src/main.c: 29: TIM2_SR1 &= ~TIM_SR1_UIF;
+	bres	0x5304, #0
+	iret
+;	src/main.c: 33: void delay(unsigned long count) {
 ;	-----------------------------------------
 ;	 function delay
 ;	-----------------------------------------
 _delay:
 	sub	sp, #8
-;	src/main.c: 18: while (count--)
+;	src/main.c: 34: while (count--)
 	ldw	y, (0x0b, sp)
 	ldw	(0x05, sp), y
 	ldw	x, (0x0d, sp)
@@ -143,58 +159,48 @@ _delay:
 	ldw	y, (0x01, sp)
 	jreq	00104$
 00115$:
-;	src/main.c: 19: nop();
+;	src/main.c: 35: nop();
 	nop
 	jra	00101$
 00104$:
 	addw	sp, #8
 	ret
-;	src/main.c: 22: int main(void)
+;	src/main.c: 38: int main(void)
 ;	-----------------------------------------
 ;	 function main
 ;	-----------------------------------------
 _main:
-;	src/main.c: 25: Initialise_System_Clock();
+;	src/main.c: 40: disableInterrupts();
+	sim
+;	src/main.c: 43: Initialise_System_Clock();
 	call	_Initialise_System_Clock
-;	src/main.c: 27: Initialise_Uart();
+;	src/main.c: 45: Initialise_Timer2();
+	call	_Initialise_Timer2
+;	src/main.c: 47: Setup_Timer2(PSCR, ARRH, ARRL);
+	push	#0x50
+	push	#0xc3
+	push	#0x03
+	call	_Setup_Timer2
+	addw	sp, #3
+;	src/main.c: 49: Initialise_Uart();
 	call	_Initialise_Uart
-;	src/main.c: 31: PORT(LED_PORT, DDR)  |= LED_PIN; // i.e. PB_DDR |= (1 << 5);
+;	src/main.c: 53: PORT(LED_PORT, DDR)  |= LED_PIN; // i.e. PB_DDR |= (1 << 5);
 	ldw	x, #0x5007
 	ld	a, (x)
 	or	a, #0x20
 	ld	(x), a
-;	src/main.c: 33: PORT(LED_PORT, CR1)  |= LED_PIN; // i.e. PB_CR1 |= (1 << 5);
+;	src/main.c: 55: PORT(LED_PORT, CR1)  |= LED_PIN; // i.e. PB_CR1 |= (1 << 5);
 	ldw	x, #0x5008
 	ld	a, (x)
 	or	a, #0x20
 	ld	(x), a
-;	src/main.c: 35: while(1) 
+;	src/main.c: 57: enableInterrupts();
+	rim
+;	src/main.c: 58: while(1) 
 00102$:
-;	src/main.c: 38: PORT(LED_PORT, ODR) |= LED_PIN; // PB_ODR |= (1 << 5);
-	ldw	x, #0x5005
-	ld	a, (x)
-	or	a, #0x20
-	ld	(x), a
-;	src/main.c: 39: delay(100000L);
-	push	#0xa0
-	push	#0x86
-	push	#0x01
-	push	#0x00
-	call	_delay
-	addw	sp, #4
-;	src/main.c: 41: PORT(LED_PORT, ODR) &= ~LED_PIN; // PB_ODR &= ~(1 << 5);
-	ldw	x, #0x5005
-	ld	a, (x)
-	and	a, #0xdf
-	ld	(x), a
-;	src/main.c: 42: delay(300000L);
-	push	#0xe0
-	push	#0x93
-	push	#0x04
-	push	#0x00
-	call	_delay
-	addw	sp, #4
-;	src/main.c: 44: Uart_Printf("Hello world......\n\r");
+;	src/main.c: 66: wfi();
+	wfi
+;	src/main.c: 67: Uart_Printf("Bare metal Programming for STM8 for firmware follow on github\n\r");
 	ldw	x, #___str_0+0
 	pushw	x
 	call	_Uart_Printf
@@ -203,7 +209,8 @@ _main:
 	ret
 	.area CODE
 ___str_0:
-	.ascii "Hello world......"
+	.ascii "Bare metal Programming for STM8 for firmware follow on githu"
+	.ascii "b"
 	.db 0x0A
 	.db 0x0D
 	.db 0x00
