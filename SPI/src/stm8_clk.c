@@ -1,6 +1,6 @@
 /**
   *********************************************************************
-  * @file    stm8_uart.c
+  * @file    stm8_uart.h
   * @author  Aniket Fondekaar
   * @date    23 July 2019
   * @brief   This file contains functions defination for the CLK 
