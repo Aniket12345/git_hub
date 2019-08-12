@@ -1,4 +1,12 @@
-/* The "Hello world!" of microcontrollers. Blink LED on/off */
+/**
+  *********************************************************************
+  * @file    main.c
+  * @author  Aniket Fondekaar
+  * @date    12 Aug 2019
+  * @brief   Uart and Timer2 interrupt implementation
+  *********************************************************************
+**/
+
 #include <stdint.h>
 #include "stm8.h"
 #include "stm8_clk.h"
