@@ -1,7 +1,13 @@
-/* The "Hello world!" of microcontrollers. Blink LED on/off */
+/**
+  *********************************************************************
+  * @file    main.c
+  * @author  Aniket Fondekaar
+  * @date    12 Aug 2019
+  * @brief   Simple LED blinking program 
+  *********************************************************************
+**/
 #include <stdint.h>
 #include "stm8.h"
-
 
 /* Build in LED is in pin B5 (STM8S103 board) or D3 (STM8S003F3 board) */
 #ifdef STM8S103

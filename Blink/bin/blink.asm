@@ -1,7 +1,7 @@
 ;--------------------------------------------------------
 ; File Created by SDCC : free open source ANSI-C Compiler
 ; Version 3.5.0 #9253 (Mar 24 2016) (Linux)
-; This file was generated Sun Jul 21 01:22:08 2019
+; This file was generated Mon Aug 12 22:32:52 2019
 ;--------------------------------------------------------
 	.module blink
 	.optsdcc -mstm8
@@ -107,13 +107,13 @@ __sdcc_program_startup:
 ; code
 ;--------------------------------------------------------
 	.area CODE
-;	src/blink.c: 16: void delay(unsigned long count) {
+;	src/blink.c: 22: void delay(unsigned long count) {
 ;	-----------------------------------------
 ;	 function delay
 ;	-----------------------------------------
 _delay:
 	sub	sp, #8
-;	src/blink.c: 17: while (count--)
+;	src/blink.c: 23: while (count--)
 	ldw	y, (0x0b, sp)
 	ldw	(0x05, sp), y
 	ldw	x, (0x0d, sp)
@@ -140,49 +140,49 @@ _delay:
 	ldw	y, (0x01, sp)
 	jreq	00104$
 00115$:
-;	src/blink.c: 18: nop();
+;	src/blink.c: 24: nop();
 	nop
 	jra	00101$
 00104$:
 	addw	sp, #8
 	ret
-;	src/blink.c: 21: int main(void)
+;	src/blink.c: 27: int main(void)
 ;	-----------------------------------------
 ;	 function main
 ;	-----------------------------------------
 _main:
-;	src/blink.c: 24: CLK_CKDIVR = 0;
+;	src/blink.c: 30: CLK_CKDIVR = 0;
 	mov	0x50c6+0, #0x00
-;	src/blink.c: 28: PORT(LED_PORT, DDR)  |= LED_PIN; // i.e. PB_DDR |= (1 << 5);
+;	src/blink.c: 34: PORT(LED_PORT, DDR)  |= LED_PIN; // i.e. PB_DDR |= (1 << 5);
 	ldw	x, #0x5007
 	ld	a, (x)
 	or	a, #0x20
 	ld	(x), a
-;	src/blink.c: 30: PORT(LED_PORT, CR1)  |= LED_PIN; // i.e. PB_CR1 |= (1 << 5);
+;	src/blink.c: 36: PORT(LED_PORT, CR1)  |= LED_PIN; // i.e. PB_CR1 |= (1 << 5);
 	ldw	x, #0x5008
 	ld	a, (x)
 	or	a, #0x20
 	ld	(x), a
-;	src/blink.c: 32: while(1) {
+;	src/blink.c: 38: while(1) {
 00102$:
-;	src/blink.c: 34: PORT(LED_PORT, ODR) |= LED_PIN; // PB_ODR |= (1 << 5);
+;	src/blink.c: 40: PORT(LED_PORT, ODR) |= LED_PIN; // PB_ODR |= (1 << 5);
 	ldw	x, #0x5005
 	ld	a, (x)
 	or	a, #0x20
 	ld	(x), a
-;	src/blink.c: 35: delay(100000L);
+;	src/blink.c: 41: delay(100000L);
 	push	#0xa0
 	push	#0x86
 	push	#0x01
 	push	#0x00
 	call	_delay
 	addw	sp, #4
-;	src/blink.c: 37: PORT(LED_PORT, ODR) &= ~LED_PIN; // PB_ODR &= ~(1 << 5);
+;	src/blink.c: 43: PORT(LED_PORT, ODR) &= ~LED_PIN; // PB_ODR &= ~(1 << 5);
 	ldw	x, #0x5005
 	ld	a, (x)
 	and	a, #0xdf
 	ld	(x), a
-;	src/blink.c: 38: delay(300000L);
+;	src/blink.c: 44: delay(300000L);
 	push	#0xe0
 	push	#0x93
 	push	#0x04

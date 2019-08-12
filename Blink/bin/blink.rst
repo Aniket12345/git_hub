@@ -1,7 +1,7 @@
                                       1 ;--------------------------------------------------------
                                       2 ; File Created by SDCC : free open source ANSI-C Compiler
                                       3 ; Version 3.5.0 #9253 (Mar 24 2016) (Linux)
-                                      4 ; This file was generated Sun Jul 21 01:22:08 2019
+                                      4 ; This file was generated Mon Aug 12 22:32:52 2019
                                       5 ;--------------------------------------------------------
                                       6 	.module blink
                                       7 	.optsdcc -mstm8
@@ -107,13 +107,13 @@
                                     107 ; code
                                     108 ;--------------------------------------------------------
                                     109 	.area CODE
-                                    110 ;	src/blink.c: 16: void delay(unsigned long count) {
+                                    110 ;	src/blink.c: 22: void delay(unsigned long count) {
                                     111 ;	-----------------------------------------
                                     112 ;	 function delay
                                     113 ;	-----------------------------------------
       0080A0                        114 _delay:
       0080A0 52 08            [ 2]  115 	sub	sp, #8
-                                    116 ;	src/blink.c: 17: while (count--)
+                                    116 ;	src/blink.c: 23: while (count--)
       0080A2 16 0B            [ 2]  117 	ldw	y, (0x0b, sp)
       0080A4 17 05            [ 2]  118 	ldw	(0x05, sp), y
       0080A6 1E 0D            [ 2]  119 	ldw	x, (0x0d, sp)
@@ -140,49 +140,49 @@
       0080C9 16 01            [ 2]  140 	ldw	y, (0x01, sp)
       0080CB 27 03            [ 1]  141 	jreq	00104$
       0080CD                        142 00115$:
-                                    143 ;	src/blink.c: 18: nop();
+                                    143 ;	src/blink.c: 24: nop();
       0080CD 9D               [ 1]  144 	nop
       0080CE 20 D8            [ 2]  145 	jra	00101$
       0080D0                        146 00104$:
       0080D0 5B 08            [ 2]  147 	addw	sp, #8
       0080D2 81               [ 4]  148 	ret
-                                    149 ;	src/blink.c: 21: int main(void)
+                                    149 ;	src/blink.c: 27: int main(void)
                                     150 ;	-----------------------------------------
                                     151 ;	 function main
                                     152 ;	-----------------------------------------
       0080D3                        153 _main:
-                                    154 ;	src/blink.c: 24: CLK_CKDIVR = 0;
+                                    154 ;	src/blink.c: 30: CLK_CKDIVR = 0;
       0080D3 35 00 50 C6      [ 1]  155 	mov	0x50c6+0, #0x00
-                                    156 ;	src/blink.c: 28: PORT(LED_PORT, DDR)  |= LED_PIN; // i.e. PB_DDR |= (1 << 5);
+                                    156 ;	src/blink.c: 34: PORT(LED_PORT, DDR)  |= LED_PIN; // i.e. PB_DDR |= (1 << 5);
       0080D7 AE 50 07         [ 2]  157 	ldw	x, #0x5007
       0080DA F6               [ 1]  158 	ld	a, (x)
       0080DB AA 20            [ 1]  159 	or	a, #0x20
       0080DD F7               [ 1]  160 	ld	(x), a
-                                    161 ;	src/blink.c: 30: PORT(LED_PORT, CR1)  |= LED_PIN; // i.e. PB_CR1 |= (1 << 5);
+                                    161 ;	src/blink.c: 36: PORT(LED_PORT, CR1)  |= LED_PIN; // i.e. PB_CR1 |= (1 << 5);
       0080DE AE 50 08         [ 2]  162 	ldw	x, #0x5008
       0080E1 F6               [ 1]  163 	ld	a, (x)
       0080E2 AA 20            [ 1]  164 	or	a, #0x20
       0080E4 F7               [ 1]  165 	ld	(x), a
-                                    166 ;	src/blink.c: 32: while(1) {
+                                    166 ;	src/blink.c: 38: while(1) {
       0080E5                        167 00102$:
-                                    168 ;	src/blink.c: 34: PORT(LED_PORT, ODR) |= LED_PIN; // PB_ODR |= (1 << 5);
+                                    168 ;	src/blink.c: 40: PORT(LED_PORT, ODR) |= LED_PIN; // PB_ODR |= (1 << 5);
       0080E5 AE 50 05         [ 2]  169 	ldw	x, #0x5005
       0080E8 F6               [ 1]  170 	ld	a, (x)
       0080E9 AA 20            [ 1]  171 	or	a, #0x20
       0080EB F7               [ 1]  172 	ld	(x), a
-                                    173 ;	src/blink.c: 35: delay(100000L);
+                                    173 ;	src/blink.c: 41: delay(100000L);
       0080EC 4B A0            [ 1]  174 	push	#0xa0
       0080EE 4B 86            [ 1]  175 	push	#0x86
       0080F0 4B 01            [ 1]  176 	push	#0x01
       0080F2 4B 00            [ 1]  177 	push	#0x00
       0080F4 CD 80 A0         [ 4]  178 	call	_delay
       0080F7 5B 04            [ 2]  179 	addw	sp, #4
-                                    180 ;	src/blink.c: 37: PORT(LED_PORT, ODR) &= ~LED_PIN; // PB_ODR &= ~(1 << 5);
+                                    180 ;	src/blink.c: 43: PORT(LED_PORT, ODR) &= ~LED_PIN; // PB_ODR &= ~(1 << 5);
       0080F9 AE 50 05         [ 2]  181 	ldw	x, #0x5005
       0080FC F6               [ 1]  182 	ld	a, (x)
       0080FD A4 DF            [ 1]  183 	and	a, #0xdf
       0080FF F7               [ 1]  184 	ld	(x), a
-                                    185 ;	src/blink.c: 38: delay(300000L);
+                                    185 ;	src/blink.c: 44: delay(300000L);
       008100 4B E0            [ 1]  186 	push	#0xe0
       008102 4B 93            [ 1]  187 	push	#0x93
       008104 4B 04            [ 1]  188 	push	#0x04
