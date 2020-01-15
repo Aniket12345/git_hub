@@ -33,6 +33,7 @@ CFLAGS = --Werror -mstm8 -lstm8 --opt-code-size
 INCLUDE = -I$(INC)
 
 SOURCE = $(wildcard $(SRC)/*.c)
+
 OBJECT = $(patsubst %,$(BIN)/%,$(notdir $(SOURCE:.c=.rel)))
 
 .PHONY = all clean run help
@@ -50,5 +51,4 @@ flash :
 	stm8flash -c $(PROGRAMMER) -p $(DEVICE) -w $(TARGET)
 help :
 	@echo "src: $(SOURCE)"
-	@echo "obj: $(OBJECT)"
 	@echo "obj: $(OBJECT)"

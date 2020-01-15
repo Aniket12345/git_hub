@@ -55,7 +55,7 @@
 #endif
 
 // Begin mt
-
+#define byte 	unsigned char
 #define TIMEOUTVALUE    50
 #define MCP_SIDH        0
 #define MCP_SIDL        1

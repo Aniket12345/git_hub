@@ -51,4 +51,3 @@ flash :
 help :
 	@echo "src: $(SOURCE)"
 	@echo "obj: $(OBJECT)"
-	@echo "obj: $(OBJECT)"

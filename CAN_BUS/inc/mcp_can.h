@@ -6,18 +6,14 @@
 
 #include "mcp_can_dfs.h"
 
-
-class MCP_CAN
-{
-	private:
 	
 	byte ext_flg;		//identifier xxxID
 
 	unsigned long can_id;		//can id
 	byte rtr;		//rtr
-	byte SPICS;
+//	byte SPICS;
+	byte   mcpMode;                         // Current controller mode
 	
-	private:
 
 	void Mcp2515_Reset(void);				//reset mcp2515
 
@@ -36,6 +32,16 @@ class MCP_CAN
 	byte Mcp2515_ReadStatus(void);		//read mcp2515's status
 
 	byte Mcp2515_SetCANCTRL_Mode(const byte newmode);		//set mode
+	
+	void SetSleepWakeup(byte enable);                               // Enable or disable the wake up interrupt (If disabled the MCP2515 will not be woken up by CAN bus activity, making it send only)
+	
+	byte Sleep();	// Put the MCP2515 in sleep mode
+
+	byte Wake();	// Wake MCP2515 manually from sleep
+	byte SetMode(byte opMode);                                      // Set operational mode
+	byte GetMode();
+/*				                                    // Get operational mode
+	byte sendMsgBuf(unsigned long id, byte ext, byte rtrBit, byte len, const byte *buf, bool wait_sent=true);  // send buf
 
 	byte Mcp2515_RequestNewMode(const byte newmode);	
 
@@ -61,7 +67,6 @@ class MCP_CAN
 	
 	byte SendMsg(unsigned long id,byte ext, byte rtrBit, byte len, const byte *buf, bool wait_sent = true);	//send message 
 
-	public:
 	MCP_CAN(byte _CS = 0);
 	void Init_CS(byte _CS);		//define CS after construction before begin()
 	void EnableTXInterrupt(bool enable = true);		//enable tx interrupt
@@ -73,12 +78,6 @@ class MCP_CAN
 	byte begin(byte speedset, const byte clockset = MCP_16MHz);     // init can
 	byte init_Mask(byte num, byte ext, unsigned long ulData);       // init Masks
 	byte init_Filt(byte num, byte ext, unsigned long ulData);       // init filters
-	void setSleepWakeup(byte enable);                               // Enable or disable the wake up interrupt (If disabled the MCP2515 will not be woken up by CAN bus activity, making it send only)
-	byte sleep();													// Put the MCP2515 in sleep mode
-	byte wake();													// Wake MCP2515 manually from sleep
-	byte setMode(byte opMode);                                      // Set operational mode
-	byte getMode();				                                    // Get operational mode
-	byte sendMsgBuf(unsigned long id, byte ext, byte rtrBit, byte len, const byte *buf, bool wait_sent=true);  // send buf
 	byte sendMsgBuf(unsigned long id, byte ext, byte len, const byte *buf, bool wait_sent=true);               // send buf
 	byte readMsgBuf(byte *len, byte *buf);                          // read buf
 	byte readMsgBufID(unsigned long *ID, byte *len, byte *buf);     // read buf with object ID
@@ -104,14 +103,13 @@ class MCP_CAN
 
 	bool mcpPinMode(const byte pin, const byte mode);                  // switch supported pins between HiZ, interrupt, output or input
 	bool mcpDigitalWrite(const byte pin, const byte mode);             // write HIGH or LOW to RX0BF/RX1BF
-	byte mcpDigitalRead(const byte pin);                               // read HIGH or LOW from supported pins
-
-};
-
+	byte mcpDigitalRead(const byte pin);                               // read HIGH or LOW from supported 
+*/
 #endif
-/*********************************************************************************************************
+
+/***********************************************************************************************************
   END FILE
-*****************
+***********************************************************************************************************/
 
 
 
