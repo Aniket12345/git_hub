@@ -4,6 +4,101 @@
 #include "stm8_spi.h"
 
 /*********************************************************************************************************
+** Function name:           txSidhToTxLoad
+** Descriptions:            return tx load command according to tx buffer sidh register
+*********************************************************************************************************/
+
+byte txSidhToRTS(byte sidh) {
+  switch (sidh) {
+    case MCP_TXB0SIDH: 
+	    return MCP_RTS_TX0;
+    break;
+    case MCP_TXB1SIDH: 
+    	return MCP_RTS_TX1;
+    break;
+    case MCP_TXB2SIDH: 
+    	return MCP_RTS_TX2;
+    break;
+  }
+  return 0;
+}
+
+/*********************************************************************************************************
+** Function name:           txCtrlReg
+** Descriptions:            return tx ctrl reg according to tx buffer index.
+**                          According to my tests this is faster and saves memory compared using vector
+*********************************************************************************************************/
+
+byte txCtrlReg(byte i) {
+  switch (i) {
+    case 0: 
+	return MCP_TXB0CTRL;
+    break;
+    case 1: 
+    	return MCP_TXB1CTRL;
+    break;
+    case 2: 
+	return MCP_TXB2CTRL;
+    break;
+  }
+  return MCP_TXB2CTRL;
+}
+
+/*********************************************************************************************************
+** Function name:           txSidhToTxLoad
+** Descriptions:            return tx load command according to tx buffer sidh register
+*********************************************************************************************************/
+
+byte txSidhToTxLoad(byte sidh) {
+  switch (sidh) {
+    case MCP_TXB0SIDH: 
+	    return MCP_LOAD_TX0;
+    break;
+    case MCP_TXB1SIDH: 
+    	return MCP_LOAD_TX1;
+    break;
+    case MCP_TXB2SIDH: 
+    	return MCP_LOAD_TX2;
+    break;
+  }
+  return 0;
+}
+
+/*********************************************************************************************************
+** Function name:           txStatusPendingFlag
+** Descriptions:            return buffer tx pending flag on status
+*********************************************************************************************************/
+
+byte txStatusPendingFlag(byte i) {
+  switch (i) {
+    case 0: return MCP_STAT_TX0_PENDING;
+    break;
+    case 1: return MCP_STAT_TX1_PENDING;
+    break;
+    case 2: return MCP_STAT_TX2_PENDING;
+    break;
+  }
+  return 0xff;
+}
+
+/*********************************************************************************************************
+** Function name:           txIfFlag
+** Descriptions:            return tx interrupt flag
+*********************************************************************************************************/
+
+byte txIfFlag(byte i) {
+  switch (i) {
+    case 0: return MCP_TX0IF;
+    break;
+    case 1: return MCP_TX1IF;
+    break;
+    case 2: return MCP_TX2IF;
+    break;
+  }
+  return 0;
+}
+
+/*********************************************************************************************************
 ** Function name:           mcp2515_reset
 ** Descriptions:            reset the device
 *********************************************************************************************************/
@@ -14,6 +109,20 @@ void  Mcp2515_Reset(void)
 	MCP2515_UNSELECT();
 	
 }
+
+/*********************************************************************************************************
+** Function name:           begin
+** Descriptions:            init can and set speed
+*********************************************************************************************************/
+byte Begin(byte speedset, const byte clockset)
+{
+    Spi_Init();
+    byte res = Mcp2515_Init(speedset, clockset);
+	
+	return ((res == MCP2515_OK) ? CAN_OK : CAN_FAILINIT);
+}
+
+
 
 /*********************************************************************************************************
 ** Function name:           mcp2515_readRegister
@@ -189,7 +298,7 @@ byte Mcp2515_SetCANCTRL_Mode(const byte newmode)
 	// This is done by setting the wake up interrupt flag
 	// This undocumented trick was found at https://github.com/mkleemann/can/blob/master/can_sleep_mcp2515.c
 	
-	if((getMode()) == MODE_SLEEP && newmode != MODE_SLEEP)
+	if((GetMode()) == MODE_SLEEP && newmode != MODE_SLEEP)
 	{
 		// Make sure wake interrupt is enable
 		byte wakeIntEnable = (Mcp2515_ReadRegister(MCP_CANINTE) & MCP_WAKIF);
@@ -205,7 +314,7 @@ byte Mcp2515_SetCANCTRL_Mode(const byte newmode)
 		// as it's put to sleep, but it will stay in SLEEP mode instead of automatically switching to LISTENONLY mode.
 		// In this situation the mode needs to be manually set to LISTENONLY.
 
-		if(Mcp2515_RequestNewMode(MODE_LESTENONLY) != MCP2515_OK)
+		if(Mcp2515_RequestNewMode(MODE_LISTENONLY) != MCP2515_OK)
 			return MCP2515_FAIL;
 
 		// Turn wake interrupt back off if it was originally off
@@ -464,9 +573,9 @@ byte Mcp2515_ConfigRate(const byte canSpeed, const byte clock)
   }
 
   if (set) {
-    mcp2515_setRegister(MCP_CNF1, cfg1);
-    mcp2515_setRegister(MCP_CNF2, cfg2);
-    mcp2515_setRegister(MCP_CNF3, cfg3);
+    Mcp2515_SetRegister(MCP_CNF1, cfg1);
+    Mcp2515_SetRegister(MCP_CNF2, cfg2);
+    Mcp2515_SetRegister(MCP_CNF3, cfg3);
     return MCP2515_OK;
   }
   else {
@@ -515,14 +624,14 @@ byte Mcp2515_Init(const byte canSpeed, const byte clock)
     if (res > 0)
     {
 #if DEBUG_EN
-	Serial.print("Enter setting mode fail\r\n");
+//	Serial.print("Enter setting mode fail\r\n");
 #else
 	delay(10);
 #endif
 	return res;
     }
 #if DEBUG_EN
-    Serial.print("Enter setting mode success \r\n");
+//    Serial.print("Enter setting mode success \r\n");
 #else
     delay(10);
 #endif
@@ -531,14 +640,14 @@ byte Mcp2515_Init(const byte canSpeed, const byte clock)
     if (Mcp2515_ConfigRate(canSpeed, clock))
     {
 #if DEBUG_EN
-	Serial.print("set rate fall!!\r\n");
+//	Serial.print("set rate fall!!\r\n");
 #else
 	delay(10);
 #endif
 	return res;
     }
 #if DEBUG_EN
-    Serial.print("set rate success!!\r\n");
+//    Serial.print("set rate success!!\r\n");
 #else
     delay(10);
 #endif
@@ -571,7 +680,7 @@ byte Mcp2515_Init(const byte canSpeed, const byte clock)
       if (res)
       {
 #if DEBUG_EN
-        Serial.print("Enter Normal Mode Fail!!\r\n");
+//        Serial.print("Enter Normal Mode Fail!!\r\n");
 #else
         delay(10);
 #endif
@@ -580,7 +689,7 @@ byte Mcp2515_Init(const byte canSpeed, const byte clock)
 
 
 #if DEBUG_EN
-      Serial.print("Enter Normal Mode Success!!\r\n");
+//      Serial.print("Enter Normal Mode Success!!\r\n");
 #else
       delay(10);
 #endif
@@ -590,10 +699,203 @@ byte Mcp2515_Init(const byte canSpeed, const byte clock)
 
 }
 
+/*********************************************************************************************************
+** Function name:           mcp2515_id_to_buf
+** Descriptions:            configure tbufdata[4] from id and ext
+*********************************************************************************************************/
 
+void Mcp2515_Id_To_Buf(const byte ext, const unsigned long id, byte *tbufdata)
+{
+    uint16_t canid;
+    canid = (uint16_t)(id & 0x0FFFF);
 
+    if ( ext == 1)
+    {
+	    tbufdata[MCP_EID0] = (byte) (canid & 0xFF);
+	    tbufdata[MCP_EID8] = (byte) (canid >> 8);
+	    canid = (uint16_t)(id >> 16);
+	    tbufdata[MCP_SIDL] = (byte) (canid & 0x03);
+	    tbufdata[MCP_SIDL] += (byte) ((canid & 0x1C) << 3);
+	    tbufdata[MCP_SIDL] |= MCP_TXB_EXIDE_M;
+	    tbufdata[MCP_SIDH] = (byte) (canid >> 5 );
+    }
+    else
+    {
+	    tbufdata[MCP_SIDH] = (byte) (canid >> 3 );
+	    tbufdata[MCP_SIDL] = (byte) ((canid & 0x07 ) << 5);
+	    tbufdata[MCP_EID0] = 0;
+	    tbufdata[MCP_EID8] = 0;
+    }
+}
 
+/*********************************************************************************************************
+** Function name:           mcp2515_write_id
+** Descriptions:            write can id
+*********************************************************************************************************/
+void Mcp2515_Write_Id(const byte mcp_addr, const byte ext, const unsigned long id)
+{
+    byte tbufdata[4];
 
+    Mcp2515_Id_To_Buf(ext,id,tbufdata);
+    Mcp2515_SetRegisterS(mcp_addr, tbufdata, 4);
+}
+
+/*********************************************************************************************************
+** Function name:           mcp2515_read_id
+** Descriptions:            read can id
+*********************************************************************************************************/
+
+void Mcp2515_Read_Id(const byte mcp_addr, byte* ext, unsigned long* id)
+{
+    byte tbufdata[4];
+
+    *ext    = 0;
+    *id     = 0;
+
+    Mcp2515_ReadRegisterS(mcp_addr, tbufdata, 4);
+
+    *id = (tbufdata[MCP_SIDH] << 3) + (tbufdata[MCP_SIDL] >> 5);
+
+    if ( (tbufdata[MCP_SIDL] & MCP_TXB_EXIDE_M) ==  MCP_TXB_EXIDE_M )
+    {
+      // extended id
+      *id = (*id << 2) + (tbufdata[MCP_SIDL] & 0x03);
+      *id = (*id << 8) + tbufdata[MCP_EID8];
+      *id = (*id << 8) + tbufdata[MCP_EID0];
+      *ext = 1;
+    }
+}
+
+/*********************************************************************************************************
+** Function name:           mcp2515_write_canMsg
+** Descriptions:            write msg
+**                          Note! There is no check for right address!
+*********************************************************************************************************/
+void Mcp2515_Write_CANMsg(const byte buffer_sidh_addr, unsigned long id, byte ext, byte rtrBit, byte len, volatile const byte *buf)
+{
+  byte load_addr=txSidhToTxLoad(buffer_sidh_addr);
+
+  byte tbufdata[4];
+  byte dlc = len | ( rtrBit ? MCP_RTR_MASK : 0 ) ;
+  byte i;
+
+  Mcp2515_Id_To_Buf(ext,id,tbufdata);
+
+  MCP2515_SELECT();
+//  Spi_Read(load_addr);
+
+  for (i = 0; i < 4; i++) 
+	  Spi_Write(tbufdata[i]);
+  
+  Spi_Write(dlc);
+
+  for (i = 0; i < len && i<CAN_MAX_CHAR_IN_MESSAGE; i++) 
+	  Spi_Write(buf[i]);
+
+  MCP2515_UNSELECT();
+
+  Mcp2515_Start_Transmit( buffer_sidh_addr );
+
+}
+
+/*********************************************************************************************************
+** Function name:           mcp2515_read_canMsg
+** Descriptions:            read message
+*********************************************************************************************************/
+
+void Mcp2515_ReadCANMsg( const byte buffer_load_addr, volatile unsigned long *id, volatile byte *ext, volatile byte *rtrBit, volatile byte *len, volatile byte *buf)        /* read can msg                 */
+{
+  buffer_load_addr;
+  byte tbufdata[4];
+  byte i;
+
+  MCP2515_SELECT();
+//  Spi_Read(buffer_load_addr);
+
+  // mcp2515 has auto-increment of address-pointer
+  for (i = 0; i < 4; i++) 
+	  tbufdata[i] = Spi_Read();
+
+  *id = (tbufdata[MCP_SIDH] << 3) + (tbufdata[MCP_SIDL] >> 5);
+  *ext = 0;
+  if ( (tbufdata[MCP_SIDL] & MCP_TXB_EXIDE_M) ==  MCP_TXB_EXIDE_M )
+  {
+    /* extended id                  */
+    *id = (*id << 2) + (tbufdata[MCP_SIDL] & 0x03);
+    *id = (*id << 8) + tbufdata[MCP_EID8];
+    *id = (*id << 8) + tbufdata[MCP_EID0];
+    *ext = 1;
+  }
+
+  byte pMsgSize = Spi_Read();
+  *len = pMsgSize & MCP_DLC_MASK;
+  *rtrBit = (pMsgSize & MCP_RTR_MASK) ? 1 : 0;
+  
+  for (i = 0; i < *len && i<CAN_MAX_CHAR_IN_MESSAGE; i++) 
+  {
+      buf[i] = Spi_Read();
+  }
+
+  MCP2515_UNSELECT();
+}
+
+/*********************************************************************************************************
+** Function name:           mcp2515_start_transmit
+** Descriptions:            Start message transmit on mcp2515
+*********************************************************************************************************/
+void Mcp2515_Start_Transmit(const byte mcp_addr)              // start transmit
+{
+  mcp_addr;
+  MCP2515_SELECT();
+//  Spi_Read(txSidhToRTS(mcp_addr));
+  MCP2515_UNSELECT();
+}
+
+/*********************************************************************************************************
+** Function name:           mcp2515_isTXBufFree
+** Descriptions:            Test is tx buffer free for transmitting
+*********************************************************************************************************/
+
+byte Mcp2515_IsTXBufFree(byte *txbuf_n, byte iBuf)           /* get Next free txbuf          */
+{
+  *txbuf_n = 0x00;
+
+  if ( iBuf>=MCP_N_TXBUFFERS || (Mcp2515_ReadStatus() & txStatusPendingFlag(iBuf))!=0 ) 
+	return MCP_ALLTXBUSY;
+
+  *txbuf_n = txCtrlReg(iBuf) + 1;                                /* return SIDH-address of Buffer */
+  Mcp2515_ModifyRegister(MCP_CANINTF, txIfFlag(iBuf), 0);
+
+  return MCP2515_OK;
+}
+
+/*********************************************************************************************************
+** Function name:           mcp2515_getNextFreeTXBuf
+** Descriptions:            finds next free tx buffer for sending. Return MCP_ALLTXBUSY, if there is none.
+*********************************************************************************************************/
+
+byte Mcp2515_GetNextFreeTXBuf(byte *txbuf_n)                 // get Next free txbuf
+{
+    byte status=Mcp2515_ReadStatus() & MCP_STAT_TX_PENDING_MASK;
+    byte i;
+
+    *txbuf_n = 0x00;
+
+    if ( status==MCP_STAT_TX_PENDING_MASK ) 
+	    return MCP_ALLTXBUSY; // All buffers are pending
+
+    // check all 3 TX-Buffers except reserved
+    for (i = 0; i < MCP_N_TXBUFFERS-nReservedTx; i++)
+    {
+      if ( (status & txStatusPendingFlag(i) ) == 0 ) {
+        *txbuf_n = txCtrlReg(i) + 1;                                   // return SIDH-address of Buffer
+        Mcp2515_ModifyRegister(MCP_CANINTF, txIfFlag(i), 0);
+        return MCP2515_OK;                                                 // ! function exit
+      }
+    }
+
+    return MCP_ALLTXBUSY;
+}
 
 
 

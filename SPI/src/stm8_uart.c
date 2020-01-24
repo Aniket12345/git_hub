@@ -48,4 +48,3 @@ void Uart_Printf(char *message)
 		ch++;
 	}
 }
-

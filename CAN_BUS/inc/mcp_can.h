@@ -14,12 +14,17 @@
 //	byte SPICS;
 	byte   mcpMode;                         // Current controller mode
 	
+	byte   nReservedTx;                     // Count of tx buffers for reserved send
+	
+	byte txSidhToRTS(byte sidh);
 
+	byte txCtrlReg(byte i);
+	
 	void Mcp2515_Reset(void);				//reset mcp2515
 
 	byte Mcp2515_ReadRegister(const byte address);		//read mcp2515's register 
 
-	void mcp2515_ReadRegisterS(const byte address, byte values[], const byte n);
+	void Mcp2515_ReadRegisterS(const byte address, byte values[], const byte n);
 
 	void Mcp2515_SetRegiter(const byte address, const byte value);		//set mcp2515's register
 
@@ -30,38 +35,49 @@
 	void Mcp2515_modifyRegister(const byte address, const byte mask, const byte data);
 
 	byte Mcp2515_ReadStatus(void);		//read mcp2515's status
-
-	byte Mcp2515_SetCANCTRL_Mode(const byte newmode);		//set mode
 	
-	void SetSleepWakeup(byte enable);                               // Enable or disable the wake up interrupt (If disabled the MCP2515 will not be woken up by CAN bus activity, making it send only)
+	void SetSleepWakeup(byte enable);   // Enable or disable the wake up interrupt (If disabled the MCP2515 will not be woken up by CAN bus activity, making it send only)
 	
 	byte Sleep();	// Put the MCP2515 in sleep mode
 
 	byte Wake();	// Wake MCP2515 manually from sleep
+	
 	byte SetMode(byte opMode);                                      // Set operational mode
-	byte GetMode();
-/*				                                    // Get operational mode
-	byte sendMsgBuf(unsigned long id, byte ext, byte rtrBit, byte len, const byte *buf, bool wait_sent=true);  // send buf
+	
+	byte GetMode();							// Get operational mode
 
+	byte Mcp2515_SetCANCTRL_Mode(const byte newmode);		//set mode
+	
 	byte Mcp2515_RequestNewMode(const byte newmode);	
-
+	
 	byte Mcp2515_ConfigRate(const byte canspeed,const byte clock);		//set baudrate
 
-	byte Mcp2515_Init(const byte canspeed, const byte clock);		//mcp2515init
-
-	void Mcp2515_Writeid(const byte mcp_addr, const byte ext, const unsigned long id);		//write can id
-
-	void Mcp2515_ReadId(const byte mcp_addr, byte *ext, unsigned long *id);			//read can id
-
-	void Mcp2515_WriteCANMsg(const byte buffer_sidh_addr, unsigned long id, byte ext, byte rtr, byte len, volatile const byte *buf);//write can msg
-
+	byte Mcp2515_Init(const byte canSpeed, const byte clock);		//mcp2515init
+	
+	void Mcp2515_Write_Id(const byte mcp_addr, const byte ext, const unsigned long id);		//write can id
+	
+	void Mcp2515_Read_Id(const byte mcp_addr, byte *ext, unsigned long *id);			//read can id
+	
+	void Mcp2515_Write_CANMsg(const byte buffer_sidh_addr, unsigned long id, byte ext, byte rtr, byte len, volatile const byte *buf);//write can msg
+	
 	void Mcp2515_ReadCANMsg(const byte buffer_load_addr, volatile unsigned long *id, volatile byte *ext, volatile byte *rtr,volatile byte *len, volatile byte *buf);	//read can msg
 
-	void Mcp2515_StartTransmit(const byte mcp_addr);	//start transmit
-
-	byte Mcp2515_GetNextFreeTXBuf(byte *txbuf_n);		//get next free txbuf
-
+	void Mcp2515_Start_Transmit(const byte mcp_addr);	//start transmit
+	
 	byte Mcp2515_TXBufFree(byte *txbuf_n, byte iBuf);	//is buffer by index free
+	
+	byte Mcp2515_GetNextFreeTXBuf(byte *txbuf_n);		//get next free txbuf
+/*
+	byte sendMsgBuf(unsigned long id, byte ext, byte rtrBit, byte len, const byte *buf, bool wait_sent=true);  // send buf
+
+
+
+
+
+
+
+
+
 
 	//can operator function 
 	
