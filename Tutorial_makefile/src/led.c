@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include"led.h"
 
-void led_on()
+void Led_on()
 {
-    printf("led on\n");
+    printf("Led on\n");
 }
 
-void led_off()
+void Led_off()
 {
-    printf("led off\n");
+    printf("Led off\n");
 }

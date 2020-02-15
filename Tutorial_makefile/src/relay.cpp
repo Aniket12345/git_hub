@@ -1,16 +1,14 @@
-//#include <stdio.h>
 #include<iostream>
-using namespace std;
-#include"relay.h"
+#include"relay.hpp"
 
-void relay_on()
+using namespace std;
+
+void Relay_on()
 {
-    //printf("relay on\n");
-    cout <<"relay on\n";
+    cout <<"Relay on\n";
 }
 
-void relay_off()
+void Relay_off()
 {
-   // printf("relay off\n");
-    cout << "relay off\n";
+    cout << "Relay off\n";
 }
