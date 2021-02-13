@@ -19,12 +19,6 @@
 #define LED_PIN     PIN3
 #endif
 
-// ISR for tim4 overflow
-void timer_isr(void) __interrupt(TIM4_OVR_UIF_IRQ)
-{
-    PB_ODR ^= (1 << 5);
-    TIM4_SR &= ~(TIM_SR1_UIF);
-}
 
 
 int main(void)

@@ -8,7 +8,7 @@
 **/
 #include <stdint.h>
 #include "stm8.h"
-#include "stm8_millis.h"
+//#include "stm8_millis.h"
 
 
 
