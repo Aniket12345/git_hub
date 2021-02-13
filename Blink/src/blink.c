@@ -20,6 +20,8 @@
 #endif
 
 
+unsigned long start_time;
+unsigned long current_time;
 
 int main(void)
 {
@@ -36,9 +38,17 @@ int main(void)
     Init_Timer4();
     Setup_TIM4();
     enableInterrupts();
+    
+    start_time = Millis();
 
 	while(1) 
     {
-	wfi();
-   }
+	current_time = Millis();
+	if(current_time - start_time >= 1000u)
+	{
+	    PB_ODR ^= (1 << 5);
+	    start_time = current_time;
+	}
+			
+    }
 }
