@@ -13,6 +13,7 @@ SRC = src
 INC = inc
 BIN = bin
 CC = sdcc
+TARGET = $(BIN)/$(DEVICE).ihx
 
 RED = \033[1;31m
 GREEN = \033[1;32m
@@ -28,24 +29,25 @@ ifeq ($(DEVICE),stm8s103f3)
 DEFINES += -DSTM8S103
 endif
 
-CFLAGS = --Werror -lstm8 -mstm8 --out-fmt-ihx -I$(INC) $(DEFINES)
+CFLAGS = --Werror -mstm8 -lstm8 --opt-code-size
+INCLUDE = -I$(INC)
 
 SOURCE = $(wildcard $(SRC)/*.c)
-OBJECT = $(patsubst %,$(BIN)/%,$(notdir $(SOURCE:.c=.ihx)))
+OBJECT = $(patsubst %,$(BIN)/%,$(notdir $(SOURCE:.c=.rel)))
 
 .PHONY = all clean run help
 
-all : $(OBJECT)
+$(BIN)/$(TARGET) : $(OBJECT)
+	$(CC) $(CFLAGS) -o $(TARGET) $^
 	@echo "$(BLUE)Finished...$(NC)"
-$(BIN)/%.ihx : $(SRC)/%.c
-	$(CC) $(CFLAGS) $< -o $@
+$(BIN)/%.rel : $(SRC)/%.c
+	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -c $? -o $@
 	@echo "$(GREEN)Compiling...$(NC)"
 
 clean : 
 	rm -rf $(BIN)/*
 flash : 
-	stm8flash -c $(PROGRAMMER) -p $(DEVICE) -w $(OBJECT)
+	stm8flash -c $(PROGRAMMER) -p $(DEVICE) -w $(TARGET)
 help :
 	@echo "src: $(SOURCE)"
-	@echo "obj: $(OBJECT)"
 	@echo "obj: $(OBJECT)"
