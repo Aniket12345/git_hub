@@ -6,10 +6,10 @@
   * @brief   timer (millis) 
   *********************************************************************
 **/
-#include "stm8.h"
 #ifndef STM8_TIM4_H
 #define STM8_TIM4_H
 
+#include "stm8.h"
 // ISR for tim4 overflow
 void timer_isr(void) __interrupt(TIM4_OVR_UIF_IRQ)
 {

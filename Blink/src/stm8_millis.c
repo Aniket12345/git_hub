@@ -6,12 +6,7 @@
   * @brief   timer (millis) 
   *********************************************************************
 **/
-#include <stdint.h>
 #include "stm8.h"
-//#include "stm8_millis.h"
-
-
-
 
 void Init_Timer4()
 {
