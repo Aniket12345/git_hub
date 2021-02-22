@@ -8,6 +8,7 @@
 **/
 
 #include <stdint.h>
+#include <stdio.h>
 #include "stm8.h"
 #include "stm8_clk.h"
 #include "stm8_uart.h"
@@ -29,6 +30,7 @@ void delay(unsigned long count) {
 
 int main(void)
 {
+	int count = 12u;
 	/* Set clock to full speed (16 Mhz) */
 	Initialise_System_Clock();
 
@@ -48,7 +50,9 @@ int main(void)
 		// LED off
 		PORT(LED_PORT, ODR) &= ~LED_PIN; // PB_ODR &= ~(1 << 5);
 		delay(300000L);
-
-		Uart_Printf("Hello world......\n\r");
+		
+		printf("Hello World\n\r");
+		printf("value = %d\n\r",count);
+//		Uart_Printf("Hello world......\n\r");
 	}
 }

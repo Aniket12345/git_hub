@@ -7,6 +7,7 @@
   *********************************************************************
 **/
 
+#include <stdio.h>
 #include "stm8.h"
 #include "stm8_uart.h"
 
@@ -37,15 +38,22 @@ void Initialise_Uart ()
         UART_CR2 |= 0x0C;
         UART_CR3 |= 0x08;                         //CLKEN =1
 }
-
-void Uart_Printf(char *message)
+void putchar(char c)
 {
-	char *ch = message;
-	while(*ch != '\0')
-	{
-		UART_DR = (unsigned char) *ch;	//  put the next char into the buffer
-		while((UART_SR &= UART_SR_TXE) == 0);	//  wait for TX to complete
-		ch++;
-	}
+	while((UART_SR &= UART_SR_TXE) == 0);	//  wait for TX to complete
+	
+	UART_DR = (unsigned char) c;	//  put the next char into the buffer
+	
 }
-
+	
+//void Uart_Printf(char *message)
+//{
+//	char *ch = message;
+//	while(*ch != '\0')
+//	{
+//		UART_DR = (unsigned char) *ch;	//  put the next char into the buffer
+//		while((UART_SR &= UART_SR_TXE) == 0);	//  wait for TX to complete
+//		ch++;
+//	}
+//}
+//
