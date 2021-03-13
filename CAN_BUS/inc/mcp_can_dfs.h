@@ -48,6 +48,7 @@
 #ifndef _MCP2515DFS_H_
 #define _MCP2515DFS_H_
 
+#include"stm8_spi.h"
 
 // if print debug information
 #ifndef DEBUG_EN

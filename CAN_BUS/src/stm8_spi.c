@@ -6,11 +6,17 @@
   * @brief   This file contains functions defination for the SPI
   *********************************************************************
 **/
-
 #include<stdint.h>
 #include"stm8.h"
 #include"stm8_spi.h"
 
+/******************
+ SPI pinout
+** SCK -> PC5
+** MOSI -> PC6
+** MISO -> PC7
+** CS -> PC4
+******************/
 
 #define CS_PIN		4
 

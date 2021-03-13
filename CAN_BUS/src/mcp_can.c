@@ -1,7 +1,34 @@
+/**
+  *********************************************************************
+  * @file    mcp_can.c
+  * @author  Aniket Fondekaar
+  * @date    23 July 2019
+  * @brief   This file contains functions defination for the mcp2515 
+  *********************************************************************
+**/
 
-
+#include <stdio.h>
 #include "mcp_can.h"
 #include "stm8_spi.h"
+#include "mcp_can_dfs.h"
+#include "stm8_millis.h"
+#include "stm8_uart.h"
+
+/* Simple busy loop delay */
+   void delayMicroseconds(unsigned long count) {
+	   while (count--)
+		   nop();
+   }
+   
+   byte ext_flg;		//identifier xxxID
+
+   unsigned long can_id;		//can id
+   byte rtr;		//rtr
+
+   byte   mcpMode;                         // Current controller mode
+
+   byte   nReservedTx;                     // Count of tx buffers for reserved send
+     
 
 /*********************************************************************************************************
 ** Function name:           txSidhToTxLoad
@@ -114,12 +141,13 @@ void  Mcp2515_Reset(void)
 ** Function name:           begin
 ** Descriptions:            init can and set speed
 *********************************************************************************************************/
-byte Begin(byte speedset, const byte clockset)
+byte Begin(byte speedset, byte clockset)
 {
+    byte res = 0;
     Spi_Init();
-    byte res = Mcp2515_Init(speedset, clockset);
-	
-	return ((res == MCP2515_OK) ? CAN_OK : CAN_FAILINIT);
+    //printf("Spi_Init_ done\n\r");
+    res = Mcp2515_Init(speedset, clockset); 
+    return  ((res == MCP2515_OK) ? CAN_OK : CAN_FAILINIT);
 }
 
 
@@ -141,26 +169,6 @@ byte  Mcp2515_ReadRegister(const byte address)
 	return ret;
 }
 
-/*********************************************************************************************************
-** Function name:           mcp2515_readRegisterS
-** Descriptions:            read registerS
-*********************************************************************************************************/
-
-void  Mcp2515_ReadRegisters(const byte address, byte values[], const byte n)
-{
-	byte i;
-	MCP2515_SELECT();
-	Spi_Write(MCP_READ);
-	Spi_Write(address);
-
-	// mcp2515 has auto-increment of addres-pointer
-	for(i=0;i<n && i<CAN_MAX_CHAR_IN_MESSAGE; i++)
-	{	
-		values[i] = Spi_Read();
-	}
-
-	MCP2515_SELECT();
-}
 
 /*********************************************************************************************************
 ** Function name:           mcp2515_setRegister
@@ -177,24 +185,6 @@ void  Mcp2515_SetRegister(const byte address, const byte value)
 	MCP2515_UNSELECT();
 }
 
-/*********************************************************************************************************
-** Function name:           mcp2515_setRegisterS
-** Descriptions:            set registerS
-*********************************************************************************************************/
-
-void  Mcp2515_SetRegisterS(const byte address, const byte values[], const byte n)
-{
-	byte i;
-	MCP2515_SELECT();
-	Spi_Write(MCP_WRITE);
-	Spi_Write(address);
-
-	for(i=0; i<n; i++)
-	{
-		Spi_Write(values[i]);
-	}
-	MCP2515_UNSELECT();
-}
 
 /*********************************************************************************************************
 ** Function name:           mcp2515_modifyRegister
@@ -228,48 +218,12 @@ byte  Mcp2515_ReadStatus(void)
 	return i;
 }
 
-/*********************************************************************************************************
-** Function name:           setSleepWakeup
-** Descriptions:            Enable or disable the wake up interrupt (If disabled the MCP2515 will not be woken up by CAN bus activity)
-*********************************************************************************************************/
 
-void SetSleepWakeup(const byte enable)
-{
-	Mcp2515_ModifyRegister(MCP_CANINTE, MCP_WAKIF, enable ? MCP_WAKIF : 0);
-}
-
-/*********************************************************************************************************
-** Function name:           sleep
-** Descriptions:            Put mcp2515 in sleep mode to save power
-*********************************************************************************************************/
-
-byte Sleep()
-{
-	if(GetMode() != MODE_SLEEP)
-		return Mcp2515_SetCANCTRL_Mode(MODE_SLEEP);
-	else
-		return CAN_OK;
-}
-
-/*********************************************************************************************************
-** Function name:           wake
-** Descriptions:            wake MCP2515 manually from sleep. It will come back in the mode it was before sleeping.
-*********************************************************************************************************/
-
-byte Wake()
-{
-	byte currMode = GetMode();
-	if(currMode != mcpMode)
-		return Mcp2515_SetCANCTRL_Mode(mcpMode);
-	else 
-		return CAN_OK;
-}
-
-/*********************************************************************************************************
-** Function name:           setMode
-** Descriptions:            Sets control mode
-*********************************************************************************************************/
-
+///*********************************************************************************************************
+//** Function name:           setMode
+//** Descriptions:            Sets control mode
+//*********************************************************************************************************/
+//
 byte SetMode(const byte opMode)
 {
 	if(opMode != MODE_SLEEP)  // if going to sleep, the value stored in opMode is not changed so that we can return to it later
@@ -298,10 +252,13 @@ byte Mcp2515_SetCANCTRL_Mode(const byte newmode)
 	// This is done by setting the wake up interrupt flag
 	// This undocumented trick was found at https://github.com/mkleemann/can/blob/master/can_sleep_mcp2515.c
 	
+  	//printf("Mcp2515_SetCANCTRL_Mode\n\r");
 	if((GetMode()) == MODE_SLEEP && newmode != MODE_SLEEP)
 	{
+		byte wakeIntEnable = 0x00; 
+  		//printf("inside if condition\n\r");
 		// Make sure wake interrupt is enable
-		byte wakeIntEnable = (Mcp2515_ReadRegister(MCP_CANINTE) & MCP_WAKIF);
+		wakeIntEnable = (Mcp2515_ReadRegister(MCP_CANINTE) & MCP_WAKIF);
 		if(!wakeIntEnable)
 			Mcp2515_ModifyRegister(MCP_CANINTE, MCP_WAKIF, MCP_WAKIF);
 
@@ -322,9 +279,11 @@ byte Mcp2515_SetCANCTRL_Mode(const byte newmode)
 			Mcp2515_ModifyRegister(MCP_CANINTE, MCP_WAKIF, 0);
 	}
 
+  	//printf("else\n\r");
 	// clear wake flag
 	Mcp2515_ModifyRegister(MCP_CANINTE, MCP_WAKIF, 0);
 
+  	//printf("afeter Mcp2515_ModifyRegister\n\r");
 	return Mcp2515_RequestNewMode(newmode);
 }
 
@@ -335,8 +294,15 @@ byte Mcp2515_SetCANCTRL_Mode(const byte newmode)
 
 byte Mcp2515_RequestNewMode(const byte newmode)
 {
-	unsigned long startTime = millis();
+	unsigned long startTime = 0; 	
+	unsigned long currentTime = 0;	
+	byte startReg = 0;
 
+	startTime = Millis();
+
+
+  	//printf("Mcp2515_RequestNewMod\n\r");
+	
 	// Spam new mode request and wait for the operation to complete
 	while(1)
 	{
@@ -344,10 +310,13 @@ byte Mcp2515_RequestNewMode(const byte newmode)
 		// This is inside the loop as sometimes requesting the new mode once doesn't work (usually when attempting to sleep)
 		Mcp2515_ModifyRegister(MCP_CANCTRL, MODE_MASK, newmode);
 		
-		byte statReg = Mcp2515_ReadRegister(MCP_CANSTAT);
-		if((statReg & MODE_MASK) == newmode) // We're now in the new mode
+  	        printf("NewMode = %x\n\r",newmode);
+		startReg = Mcp2515_ReadRegister(MCP_CANSTAT);
+  	        printf("StatusReg = %x\n\r",startReg);
+		currentTime = Millis();
+		if((startReg & MODE_MASK) == newmode) // We're now in the new mode
 			return MCP2515_OK;
-		else if((millis() - startTime) > 200) // Wait no more than 200ms for the operation to complete
+		else if((currentTime - startTime) >= 200u) // Wait no more than 200ms for the operation to complete
 			return MCP2515_FAIL;
 	}
 }
@@ -359,7 +328,7 @@ byte Mcp2515_RequestNewMode(const byte newmode)
 
 byte Mcp2515_ConfigRate(const byte canSpeed, const byte clock)
 {
-  byte set, cfg1, cfg2, cfg3;
+  byte set=0x00, cfg1=0x00, cfg2=0x00, cfg3=0x00,test1 = 0x00;
   set = 1;
   switch (clock)
   {
@@ -576,6 +545,15 @@ byte Mcp2515_ConfigRate(const byte canSpeed, const byte clock)
     Mcp2515_SetRegister(MCP_CNF1, cfg1);
     Mcp2515_SetRegister(MCP_CNF2, cfg2);
     Mcp2515_SetRegister(MCP_CNF3, cfg3);
+    printf("cfg1 = %X\r\n",cfg1); 
+    printf("cfg2 = %X\r\n",cfg2); 
+    printf("cfg3 = %X\r\n",cfg3); 
+    test1 = Mcp2515_ReadRegister(MCP_CNF1);
+    printf("MCP_CNF1 = %X\r\n",test1);
+    test1 = Mcp2515_ReadRegister(MCP_CNF2);
+    printf("MCP_CNF2 = %X\r\n",test1);
+    test1 = Mcp2515_ReadRegister(MCP_CNF3);
+    printf("MCP_CNF3 = %X\r\n",test1);
     return MCP2515_OK;
   }
   else {
@@ -612,26 +590,30 @@ void Mcp2515_InitCANBuffers(void)
 ** Function name:           mcp2515_init
 ** Descriptions:            init the device
 *********************************************************************************************************/
-
 byte Mcp2515_Init(const byte canSpeed, const byte clock)
 {
 
-    byte res;
+    byte res = 0;
+
+    //printf("Enter to Mcp2515_ init function\r\n");
 
     Mcp2515_Reset();
 
+    //printf("after Mcp2515 Reset\r\n");
     res = Mcp2515_SetCANCTRL_Mode(MODE_CONFIG);
+    
+    printf("after Mcp2515 Mcp2515_SetCANCTRL_Mode\r\n");
     if (res > 0)
     {
 #if DEBUG_EN
-//	Serial.print("Enter setting mode fail\r\n");
+	printf("Enter setting mode fail\r\n");
 #else
 	delay(10);
 #endif
 	return res;
     }
 #if DEBUG_EN
-//    Serial.print("Enter setting mode success \r\n");
+    printf("Enter setting mode success \r\n");
 #else
     delay(10);
 #endif
@@ -640,14 +622,14 @@ byte Mcp2515_Init(const byte canSpeed, const byte clock)
     if (Mcp2515_ConfigRate(canSpeed, clock))
     {
 #if DEBUG_EN
-//	Serial.print("set rate fall!!\r\n");
+	printf("set rate fall!!\r\n");
 #else
 	delay(10);
 #endif
 	return res;
     }
 #if DEBUG_EN
-//    Serial.print("set rate success!!\r\n");
+    printf("set rate success!!\r\n");
 #else
     delay(10);
 #endif
@@ -680,7 +662,7 @@ byte Mcp2515_Init(const byte canSpeed, const byte clock)
       if (res)
       {
 #if DEBUG_EN
-//        Serial.print("Enter Normal Mode Fail!!\r\n");
+        printf("Enter Normal Mode Fail!!\r\n");
 #else
         delay(10);
 #endif
@@ -689,7 +671,7 @@ byte Mcp2515_Init(const byte canSpeed, const byte clock)
 
 
 #if DEBUG_EN
-//      Serial.print("Enter Normal Mode Success!!\r\n");
+      printf("Enter Normal Mode Success!!\r\n");
 #else
       delay(10);
 #endif
@@ -700,6 +682,97 @@ byte Mcp2515_Init(const byte canSpeed, const byte clock)
 }
 
 /*********************************************************************************************************
+** Function name:           sendMsgBuf
+** Descriptions:            send buf
+*********************************************************************************************************/
+byte SendMsgBuf(unsigned long id, byte ext, byte rtrBit, byte len, const byte *buf, bool wait_sent)
+{
+    return SendMsg(id,ext,rtrBit,len,buf,wait_sent);
+}
+
+/*********************************************************************************************************
+** Function name:           sendMsg
+** Descriptions:            send message
+*********************************************************************************************************/
+byte SendMsg(unsigned long id, byte ext, byte rtrBit, byte len, const byte *buf, bool wait_sent)
+{
+    byte res = 0, res1 = 0, txbuf_n = 0;
+    uint16_t uiTimeOut = 0;
+
+    can_id=id;
+    ext_flg=ext;
+    rtr=rtrBit;
+
+    printf("Inside SendMeg\n\r");
+    do {
+        if (uiTimeOut > 0) delayMicroseconds(10);
+        res = Mcp2515_GetNextFreeTXBuf(&txbuf_n);                       // info = addr.
+        uiTimeOut++;
+    } while (res == MCP_ALLTXBUSY && (uiTimeOut < TIMEOUTVALUE));
+
+    printf("Outdie buf available\n\r");
+    printf("SIDH buf = %d\n\r",res);
+    if (uiTimeOut == TIMEOUTVALUE)
+    {
+        return CAN_GETTXBFTIMEOUT;                                      // get tx buff time out
+    }
+    Mcp2515_Write_CANMsg(txbuf_n, id, ext, rtrBit, len, buf);
+
+    printf("Message is written\n\r");
+    if (wait_sent) {
+      uiTimeOut = 0;
+      do
+      {
+        if (uiTimeOut > 0) delayMicroseconds(10);
+          uiTimeOut++;
+          res1 = Mcp2515_ReadRegister(txbuf_n - 1);  // read send buff ctrl reg
+          res1 = res1 & 0x08;
+	  printf("DataintoDataBuf = %X\r\n",res1);
+      } while (res1 && (uiTimeOut < TIMEOUTVALUE));
+
+      if (uiTimeOut == TIMEOUTVALUE)                                       // send msg timeout
+      {
+          return CAN_SENDMSGTIMEOUT;
+      }
+    }
+
+    return CAN_OK;
+
+}
+
+/*********************************************************************************************************
+** Function name:           mcp2515_getNextFreeTXBuf
+** Descriptions:            finds next free tx buffer for sending. Return MCP_ALLTXBUSY, if there is none.
+*********************************************************************************************************/
+byte Mcp2515_GetNextFreeTXBuf(byte *txbuf_n)                 // get Next free txbuf
+{
+    byte status = 0;
+    byte i = 0x00;
+    status = Mcp2515_ReadStatus() & MCP_STAT_TX_PENDING_MASK;
+    
+    printf("StatuR = %d\r\n",status);
+
+    *txbuf_n = 0x00;
+
+    if ( status==MCP_STAT_TX_PENDING_MASK ) return MCP_ALLTXBUSY; // All buffers are pending
+
+    // check all 3 TX-Buffers except reserved
+    for (i = 0; i < MCP_N_TXBUFFERS; i++)
+    {
+      if ( (status & txStatusPendingFlag(i) ) == 0 ) {
+        *txbuf_n = txCtrlReg(i) + 1;                                   // return SIDH-address of Buffer
+	printf("Buffer[%d] address =  %d\r\n",i,*txbuf_n);
+        Mcp2515_ModifyRegister(MCP_CANINTF, txIfFlag(i), 0);
+        return MCP2515_OK;                                                 // ! function exit
+      }
+    }
+
+    return MCP_ALLTXBUSY;
+}
+
+
+
+/*********************************************************************************************************
 ** Function name:           mcp2515_id_to_buf
 ** Descriptions:            configure tbufdata[4] from id and ext
 *********************************************************************************************************/
@@ -708,7 +781,7 @@ void Mcp2515_Id_To_Buf(const byte ext, const unsigned long id, byte *tbufdata)
 {
     uint16_t canid;
     canid = (uint16_t)(id & 0x0FFFF);
-
+    printf("canId = %d\r\n",canid);
     if ( ext == 1)
     {
 	    tbufdata[MCP_EID0] = (byte) (canid & 0xFF);
@@ -729,115 +802,48 @@ void Mcp2515_Id_To_Buf(const byte ext, const unsigned long id, byte *tbufdata)
 }
 
 /*********************************************************************************************************
-** Function name:           mcp2515_write_id
-** Descriptions:            write can id
-*********************************************************************************************************/
-void Mcp2515_Write_Id(const byte mcp_addr, const byte ext, const unsigned long id)
-{
-    byte tbufdata[4];
-
-    Mcp2515_Id_To_Buf(ext,id,tbufdata);
-    Mcp2515_SetRegisterS(mcp_addr, tbufdata, 4);
-}
-
-/*********************************************************************************************************
-** Function name:           mcp2515_read_id
-** Descriptions:            read can id
-*********************************************************************************************************/
-
-void Mcp2515_Read_Id(const byte mcp_addr, byte* ext, unsigned long* id)
-{
-    byte tbufdata[4];
-
-    *ext    = 0;
-    *id     = 0;
-
-    Mcp2515_ReadRegisterS(mcp_addr, tbufdata, 4);
-
-    *id = (tbufdata[MCP_SIDH] << 3) + (tbufdata[MCP_SIDL] >> 5);
-
-    if ( (tbufdata[MCP_SIDL] & MCP_TXB_EXIDE_M) ==  MCP_TXB_EXIDE_M )
-    {
-      // extended id
-      *id = (*id << 2) + (tbufdata[MCP_SIDL] & 0x03);
-      *id = (*id << 8) + tbufdata[MCP_EID8];
-      *id = (*id << 8) + tbufdata[MCP_EID0];
-      *ext = 1;
-    }
-}
-
-/*********************************************************************************************************
 ** Function name:           mcp2515_write_canMsg
 ** Descriptions:            write msg
 **                          Note! There is no check for right address!
 *********************************************************************************************************/
 void Mcp2515_Write_CANMsg(const byte buffer_sidh_addr, unsigned long id, byte ext, byte rtrBit, byte len, volatile const byte *buf)
 {
-  byte load_addr=txSidhToTxLoad(buffer_sidh_addr);
+   byte test=0;
+   byte load_addr= 0;
+   byte i = 0;
+   byte dlc =0;
+   byte tbufdata[4] = {0x00,0x00,0x00,0x00};
 
-  byte tbufdata[4];
-  byte dlc = len | ( rtrBit ? MCP_RTR_MASK : 0 ) ;
-  byte i;
+   load_addr = txSidhToTxLoad(buffer_sidh_addr);
 
-  Mcp2515_Id_To_Buf(ext,id,tbufdata);
 
-  MCP2515_SELECT();
-//  Spi_Read(load_addr);
+   dlc = len | ( rtrBit ? MCP_RTR_MASK : 0 ) ;
 
-  for (i = 0; i < 4; i++) 
-	  Spi_Write(tbufdata[i]);
-  
-  Spi_Write(dlc);
+   Mcp2515_Id_To_Buf(ext,id,tbufdata);
 
-  for (i = 0; i < len && i<CAN_MAX_CHAR_IN_MESSAGE; i++) 
-	  Spi_Write(buf[i]);
+   printf("tbufdata[MCP_SIDH] = %X\r\n",tbufdata[MCP_SIDH]);  
+   printf("tbufdata[MCP_SIDL] = %X\r\n",tbufdata[MCP_SIDL]);  
+   MCP2515_SELECT();
+   Spi_Write(MCP_WRITE);//  Spi_Read(load_addr);
+   
+   Spi_Write(load_addr);
 
-  MCP2515_UNSELECT();
+   for (i = 0; i < 4; i++) 
+	   Spi_Write(tbufdata[i]);
 
-  Mcp2515_Start_Transmit( buffer_sidh_addr );
+   Spi_Write(dlc);
+   printf("DLC = %d\r\n",dlc);
+   for (i = 0; i < len && i<CAN_MAX_CHAR_IN_MESSAGE; i++) 
+	   Spi_Write(buf[i]);
+
+   MCP2515_UNSELECT();
+
+   test = Mcp2515_ReadRegister(MCP_SIDH);
+   printf("MCP_SIDH = %X\r\n",test);
+   Mcp2515_Start_Transmit( buffer_sidh_addr );
 
 }
 
-/*********************************************************************************************************
-** Function name:           mcp2515_read_canMsg
-** Descriptions:            read message
-*********************************************************************************************************/
-
-void Mcp2515_ReadCANMsg( const byte buffer_load_addr, volatile unsigned long *id, volatile byte *ext, volatile byte *rtrBit, volatile byte *len, volatile byte *buf)        /* read can msg                 */
-{
-  buffer_load_addr;
-  byte tbufdata[4];
-  byte i;
-
-  MCP2515_SELECT();
-//  Spi_Read(buffer_load_addr);
-
-  // mcp2515 has auto-increment of address-pointer
-  for (i = 0; i < 4; i++) 
-	  tbufdata[i] = Spi_Read();
-
-  *id = (tbufdata[MCP_SIDH] << 3) + (tbufdata[MCP_SIDL] >> 5);
-  *ext = 0;
-  if ( (tbufdata[MCP_SIDL] & MCP_TXB_EXIDE_M) ==  MCP_TXB_EXIDE_M )
-  {
-    /* extended id                  */
-    *id = (*id << 2) + (tbufdata[MCP_SIDL] & 0x03);
-    *id = (*id << 8) + tbufdata[MCP_EID8];
-    *id = (*id << 8) + tbufdata[MCP_EID0];
-    *ext = 1;
-  }
-
-  byte pMsgSize = Spi_Read();
-  *len = pMsgSize & MCP_DLC_MASK;
-  *rtrBit = (pMsgSize & MCP_RTR_MASK) ? 1 : 0;
-  
-  for (i = 0; i < *len && i<CAN_MAX_CHAR_IN_MESSAGE; i++) 
-  {
-      buf[i] = Spi_Read();
-  }
-
-  MCP2515_UNSELECT();
-}
 
 /*********************************************************************************************************
 ** Function name:           mcp2515_start_transmit
@@ -847,56 +853,8 @@ void Mcp2515_Start_Transmit(const byte mcp_addr)              // start transmit
 {
   mcp_addr;
   MCP2515_SELECT();
-//  Spi_Read(txSidhToRTS(mcp_addr));
+  Spi_Write(txSidhToRTS(mcp_addr));
   MCP2515_UNSELECT();
 }
-
-/*********************************************************************************************************
-** Function name:           mcp2515_isTXBufFree
-** Descriptions:            Test is tx buffer free for transmitting
-*********************************************************************************************************/
-
-byte Mcp2515_IsTXBufFree(byte *txbuf_n, byte iBuf)           /* get Next free txbuf          */
-{
-  *txbuf_n = 0x00;
-
-  if ( iBuf>=MCP_N_TXBUFFERS || (Mcp2515_ReadStatus() & txStatusPendingFlag(iBuf))!=0 ) 
-	return MCP_ALLTXBUSY;
-
-  *txbuf_n = txCtrlReg(iBuf) + 1;                                /* return SIDH-address of Buffer */
-  Mcp2515_ModifyRegister(MCP_CANINTF, txIfFlag(iBuf), 0);
-
-  return MCP2515_OK;
-}
-
-/*********************************************************************************************************
-** Function name:           mcp2515_getNextFreeTXBuf
-** Descriptions:            finds next free tx buffer for sending. Return MCP_ALLTXBUSY, if there is none.
-*********************************************************************************************************/
-
-byte Mcp2515_GetNextFreeTXBuf(byte *txbuf_n)                 // get Next free txbuf
-{
-    byte status=Mcp2515_ReadStatus() & MCP_STAT_TX_PENDING_MASK;
-    byte i;
-
-    *txbuf_n = 0x00;
-
-    if ( status==MCP_STAT_TX_PENDING_MASK ) 
-	    return MCP_ALLTXBUSY; // All buffers are pending
-
-    // check all 3 TX-Buffers except reserved
-    for (i = 0; i < MCP_N_TXBUFFERS-nReservedTx; i++)
-    {
-      if ( (status & txStatusPendingFlag(i) ) == 0 ) {
-        *txbuf_n = txCtrlReg(i) + 1;                                   // return SIDH-address of Buffer
-        Mcp2515_ModifyRegister(MCP_CANINTF, txIfFlag(i), 0);
-        return MCP2515_OK;                                                 // ! function exit
-      }
-    }
-
-    return MCP_ALLTXBUSY;
-}
-
-
 
 
