@@ -13,7 +13,7 @@
 
 
 #define CS_PIN		4
-
+// clock out data on rising edge
 void Spi_Init()
 {
 	/*  Initialize CS pin*/
@@ -38,9 +38,17 @@ void Spi_Write(uint8_t data)
 
 uint8_t Spi_Read()
 {
+	uint8_t Data =0x00;
+
 	Spi_Write(0xFF);	//  To read write dummy value
 	while(!(SPI_SR & SPI_SR_RXNE));		//  wait till rx buffer is full
-	return SPI_DR;
+	Data = SPI_DR;
+
+	// Reading twice as initialy it will return (FF) value	
+	while(!(SPI_SR & SPI_SR_RXNE));		//  wait till rx buffer is full
+	Data = SPI_DR;
+	return ((uint8_t)Data);
+
 }
 
 void Chip_Select()
