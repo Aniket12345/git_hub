@@ -19,7 +19,7 @@ Uart Tx D5
 ******************/
 
 uint8_t ret = 0x00;
-
+uint8_t q =0;
 unsigned char stmp[8] = {0x01,0x02,0x03,0x00,0x05,0x06,0x07};
 uint8_t check = 0;
 // ISR for tim4 overflow
@@ -47,40 +47,24 @@ void main(void)
    Spi_Init();
    enableInterrupts();
 
-  printf("CAN Initializtion about to happen\n\r");
-//  while(CAN_OK != Begin(CAN_500KBPS,MCP_16MHz))
-//  {
-//       printf("CAN init Fail, retry.....\n\r");
-//       delayMicroseconds(1000);
-//  }
-//  printf("CAN init OK\n");
-    delayMicroseconds(100000);
+   printf("CAN Initializtion about to happen\n\r");
+   while(CAN_OK != Begin(CAN_500KBPS,MCP_16MHz))
+   {
+	   printf("CAN init Fail, retry.....\n\r");
+	   delayMicroseconds(1000);
+   }
+   printf("CAN init OK\n");
+   delayMicroseconds(100000);
     
-    MCP2515_SELECT();
-    Spi_Write(MCP_WRITE);
-    Spi_Write(0x0F);
-    Spi_Write(0x80);
-    MCP2515_UNSELECT();
-
-    delayMicroseconds(100000);
-    
-    MCP2515_SELECT();
-    Spi_Write(MCP_READ);
-    Spi_Write(0x0E);
-    printf("CANCTRL = %x\n\r",Spi_Read());
-    //ret = Spi_Read();
-    MCP2515_UNSELECT();
-
 	
+   delayMicroseconds(500000);
+   check = SendMsgBuf(0x08,0,0,8,stmp,true);	
+   printf("check = %d\r\n",check);
+   delayMicroseconds(500000);
    while(1) 
    {
-//	check = SendMsgBuf(0x08,0,0,8,stmp,true);	
-//	printf("check = %d\r\n",check);
-//        delayMicroseconds(500000);
-   }
-//    while(1)
-//{}
 
-    
+   }
+
 
 }

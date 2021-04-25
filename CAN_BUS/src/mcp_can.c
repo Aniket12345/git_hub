@@ -705,7 +705,9 @@ byte SendMsg(unsigned long id, byte ext, byte rtrBit, byte len, const byte *buf,
 
     printf("Inside SendMeg\n\r");
     do {
-        if (uiTimeOut > 0) delayMicroseconds(10);
+        if (uiTimeOut > 0) 
+	delayMicroseconds(10);
+
         res = Mcp2515_GetNextFreeTXBuf(&txbuf_n);                       // info = addr.
         uiTimeOut++;
     } while (res == MCP_ALLTXBUSY && (uiTimeOut < TIMEOUTVALUE));
